@@ -5,15 +5,6 @@ const session = require('express-session');
 const csrf = require('./src/middleware/csrf');
 
 const authRoutes = require('./src/routes/auth');
-// -- Route imports. Each person adds their own line(s) here in their PR. --
-
-// person 2: eggsRoutes, quailRoutes
-
-// person 3: mortalityRoutes, feedRoutes
-
-// person 4: salesRoutes, expensesRoutes
-
-// dashboard owner: dashboardRoutes, chartsRoutes, reportsRoutes
 
 const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -54,15 +45,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
-// -- Route mounting. Each person adds their own line(s) here in their PR. --
-
-// person 2: app.use('/eggs', eggsRoutes); app.use('/quail', quailRoutes);
-
-// person 3: app.use('/mortality', mortalityRoutes); app.use('/feed', feedRoutes);
-
-// person 4: app.use('/sales', salesRoutes); app.use('/expenses', expensesRoutes);
-
-// dashboard owner: app.use('/dashboard', dashboardRoutes); app.use('/api/charts', chartsRoutes); app.use('/reports', reportsRoutes);
 
 app.use((req, res) => {
   res.status(404).send('Page not found. <a href="/dashboard">Go to Dashboard</a>');
