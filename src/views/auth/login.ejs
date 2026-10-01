@@ -1,0 +1,23 @@
+<%- include('../partials/header', { title: 'Log In', hideNav: true }) %>
+<div class="auth-card">
+  <h1>Log In to Kwill</h1>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+  <form method="POST" action="/auth/login" class="form-large">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" required autofocus maxlength="20">
+
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input type="password" id="password" name="password" required>
+      <button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false"></button>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-large">Log In</button>
+  </form>
+  <p>New here? <a href="/auth/register">Create an Account</a></p>
+</div>
+<script src="/js/password-toggle.js"></script>
+<%- include('../partials/footer') %>

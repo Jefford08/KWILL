@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Kwill' %> - Kwill</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body<% if (typeof bodyClass !== 'undefined') { %> class="<%= bodyClass %>"<% } %>>
+<div id="page-loading" class="page-loading" aria-hidden="true">
+  <div class="page-loading-spinner"></div>
+  <p class="page-loading-text">Loading&hellip;</p>
+</div>
+<script src="/js/page-loading.js"></script>
+<% if (typeof hideNav === 'undefined' || !hideNav) { %>
+  <%- include('nav') %>
+<% } %>
+<main class="container">
