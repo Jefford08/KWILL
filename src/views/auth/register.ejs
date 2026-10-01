@@ -1,0 +1,35 @@
+<%- include('../partials/header', { title: 'Register', hideNav: true }) %>
+<div class="auth-card">
+  <h1>Create Your Kwill Account</h1>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+  <form method="POST" action="/auth/register" class="form-large">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" required autofocus>
+
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" required minlength="3" maxlength="20">
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input type="password" id="password" name="password" required minlength="6">
+      <button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false"></button>
+    </div>
+
+    <label for="confirm_password">Confirm Password</label>
+    <div class="password-field">
+      <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+      <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false"></button>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-large">Register</button>
+  </form>
+  <p>Already have an account? <a href="/auth/login">Log In</a></p>
+</div>
+<script src="/js/password-toggle.js"></script>
+<%- include('../partials/footer') %>
