@@ -64,6 +64,13 @@ app.use('/expenses', expensesRoutes);
 app.use('/api/charts', chartsRoutes);
 app.use('/reports', reportsRoutes);
 
+// Initialize database schema on startup
+const { init } = require('./src/db/init');
+init().catch(err => {
+  console.error('Failed to initialize database:', err);
+  // Don't exit - let the app run and handle DB errors gracefully
+});
+
 app.use((req, res) => {
   res.status(404).send('Page not found. <a href="/dashboard">Go to Dashboard</a>');
 });
