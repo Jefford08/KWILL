@@ -1,0 +1,59 @@
+<%- include('../partials/header', { title: 'Feed Management' }) %>
+<h1>Feed Management</h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<div class="two-col">
+  <form method="POST" action="/feed/purchase" class="form-large">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Record Purchase</h2>
+    <label for="purchase_date">Date</label>
+    <input type="date" id="purchase_date" name="purchase_date" value="<%= today %>" required>
+    <label for="quantity_kg_p">Quantity (kg)</label>
+    <input type="number" step="0.01" min="0" id="quantity_kg_p" name="quantity_kg" required>
+    <label for="cost">Cost (₱)</label>
+    <input type="number" step="0.01" min="0" id="cost" name="cost" required>
+    <button type="submit" class="btn btn-primary btn-large">Save Purchase</button>
+  </form>
+
+  <form method="POST" action="/feed/consumption" class="form-large">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Record Consumption</h2>
+    <label for="consumption_date">Date</label>
+    <input type="date" id="consumption_date" name="consumption_date" value="<%= today %>" required>
+    <label for="quantity_kg_c">Quantity Used (kg)</label>
+    <input type="number" step="0.01" min="0" id="quantity_kg_c" name="quantity_kg" required>
+    <button type="submit" class="btn btn-primary btn-large">Save Consumption</button>
+  </form>
+</div>
+
+<h2>Trend (Consumption)</h2>
+<%- include('../partials/chart-controls') %>
+<canvas id="trend-chart" data-metric="feed" height="100"></canvas>
+
+<h2>History</h2>
+<table class="data-table">
+  <thead><tr><th>Date</th><th>Type</th><th>Quantity (kg)</th><th>Cost</th><th>Actions</th></tr></thead>
+  <tbody>
+  <% history.forEach(function(r) { %>
+    <tr>
+      <td><%= r.date %></td>
+      <td><%= r.kind === 'purchase' ? 'Purchase' : 'Consumption' %></td>
+      <td><%= r.quantity_kg %></td>
+      <td><%= r.kind === 'purchase' ? '₱' + Number(r.cost).toFixed(2) : '-' %></td>
+      <td>
+        <form method="POST" action="/feed/<%= r.kind %>/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this entry?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-small btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/charts.js"></script>
+<%- include('../partials/footer') %>
