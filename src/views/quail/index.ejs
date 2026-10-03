@@ -1,0 +1,58 @@
+<%- include('../partials/header', { title: 'Quail Management' }) %>
+<h1>Quail Management</h1>
+<p class="tile-inline">Current Population: <strong><%= currentTotal %></strong></p>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<form method="POST" action="<%= (edit && edit.id) ? '/quail/' + edit.id + '/update' : '/quail' %>" class="form-large">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label for="entry_date">Date</label>
+  <input type="date" id="entry_date" name="entry_date" value="<%= edit ? edit.entry_date : today %>" required>
+
+  <label for="change_type">Type</label>
+  <select id="change_type" name="change_type">
+    <option value="add" <%= edit && edit.change_type === 'add' ? 'selected' : '' %>>Add Stock</option>
+    <option value="remove" <%= edit && edit.change_type === 'remove' ? 'selected' : '' %>>Remove Stock</option>
+  </select>
+
+  <label for="quantity">Quantity</label>
+  <input type="number" id="quantity" name="quantity" min="1" value="<%= edit ? edit.quantity : 1 %>" required>
+
+  <label for="note">Note (optional)</label>
+  <input type="text" id="note" name="note" value="<%= edit && edit.note ? edit.note : '' %>">
+
+  <button type="submit" class="btn btn-primary btn-large"><%= (edit && edit.id) ? 'Update Entry' : 'Save Entry' %></button>
+  <% if (edit && edit.id) { %><a class="btn btn-secondary" href="/quail">Cancel</a><% } %>
+</form>
+
+<h2>Trend</h2>
+<%- include('../partials/chart-controls') %>
+<canvas id="trend-chart" data-metric="population" height="100"></canvas>
+
+<h2>History</h2>
+<table class="data-table">
+  <thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Note</th><th>Actions</th></tr></thead>
+  <tbody>
+  <% records.forEach(function(r) { %>
+    <tr>
+      <td><%= r.entry_date %></td>
+      <td><%= r.change_type === 'add' ? 'Added' : 'Removed' %></td>
+      <td><%= r.quantity %></td>
+      <td><%= r.note || '-' %></td>
+      <td>
+        <a class="btn btn-small" href="/quail/<%= r.id %>/edit">Edit</a>
+        <form method="POST" action="/quail/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this entry?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-small btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/charts.js"></script>
+<%- include('../partials/footer') %>
