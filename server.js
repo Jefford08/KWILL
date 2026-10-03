@@ -65,11 +65,37 @@ app.use('/api/charts', chartsRoutes);
 app.use('/reports', reportsRoutes);
 
 // Initialize database schema on startup
-const { init } = require('./src/db/init');
-init().catch(err => {
-  console.error('Failed to initialize database:', err);
-  // Don't exit - let the app run and handle DB errors gracefully
-});
+(async () => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { Client } = require('pg');
+
+    const schema = fs.readFileSync(path.join(__dirname, 'src/db', 'schema.sql'), 'utf8');
+    const connectionString = process.env.DATABASE_URL;
+
+    const client = connectionString
+      ? new Client({
+          connectionString,
+          ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false },
+        })
+      : new Client({
+          host: process.env.DB_HOST || 'localhost',
+          port: process.env.DB_PORT || 5432,
+          user: process.env.DB_USER || 'postgres',
+          password: process.env.DB_PASSWORD || '',
+          database: process.env.DB_NAME || 'kwill_db',
+        });
+
+    await client.connect();
+    await client.query(schema);
+    console.log('Database schema applied successfully.');
+    await client.end();
+  } catch (err) {
+    console.error('Failed to initialize database:', err);
+    // Don't exit - let the app run and handle DB errors gracefully
+  }
+})();
 
 app.use((req, res) => {
   res.status(404).send('Page not found. <a href="/dashboard">Go to Dashboard</a>');
