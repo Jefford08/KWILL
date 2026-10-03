@@ -1,0 +1,39 @@
+<%- include('partials/header', { title: 'Dashboard' }) %>
+<h1>Farm Overview</h1>
+
+<section class="tiles">
+  <div class="tile"><span class="tile-label">Total Quails</span><span class="tile-value"><%= stats.totalQuails %></span></div>
+  <div class="tile"><span class="tile-label">Eggs Today</span><span class="tile-value"><%= stats.eggsToday %></span></div>
+  <div class="tile"><span class="tile-label">Mortality (To Date)</span><span class="tile-value"><%= stats.mortalityToDate %></span></div>
+  <div class="tile"><span class="tile-label">Feed Used (This Month)</span><span class="tile-value"><%= stats.feedUsedMonth %> kg</span></div>
+  <div class="tile"><span class="tile-label">Sales (This Month)</span><span class="tile-value">₱<%= stats.salesMonth.toFixed(2) %></span></div>
+  <div class="tile"><span class="tile-label">Profit (This Month)</span><span class="tile-value">₱<%= stats.profitMonth.toFixed(2) %></span></div>
+</section>
+
+<h2>Quick Add</h2>
+<section class="quick-add">
+  <a class="btn btn-primary btn-large" href="/eggs">+ Egg Record</a>
+  <a class="btn btn-primary btn-large" href="/mortality">+ Mortality</a>
+  <a class="btn btn-primary btn-large" href="/feed">+ Feed</a>
+  <a class="btn btn-primary btn-large" href="/sales">+ Sale</a>
+  <a class="btn btn-primary btn-large" href="/expenses">+ Expense</a>
+</section>
+
+<h2>Trends</h2>
+<section class="chart-section">
+  <p class="chart-hint">Choose which trends to plot together (click a line's name in the chart to hide/show it):</p>
+  <div id="metric-checkboxes" class="metric-toggles">
+    <label class="metric-toggle"><input type="checkbox" value="eggs" checked><span class="swatch" style="background:#2f6f3e"></span> Egg Production</label>
+    <label class="metric-toggle"><input type="checkbox" value="mortality"><span class="swatch" style="background:#b3261e"></span> Mortality</label>
+    <label class="metric-toggle"><input type="checkbox" value="feed"><span class="swatch" style="background:#8a5a2b"></span> Feed Consumption</label>
+    <label class="metric-toggle"><input type="checkbox" value="sales"><span class="swatch" style="background:#1d4ed8"></span> Sales</label>
+    <label class="metric-toggle"><input type="checkbox" value="expenses"><span class="swatch" style="background:#c2410c"></span> Expenses</label>
+    <label class="metric-toggle"><input type="checkbox" value="profit"><span class="swatch" style="background:#7c3aed"></span> Profit</label>
+  </div>
+  <%- include('partials/chart-controls') %>
+  <canvas id="trend-chart" height="120"></canvas>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/charts.js"></script>
+<%- include('partials/footer') %>

@@ -1,0 +1,54 @@
+<%- include('../partials/header', { title: 'Expenses' }) %>
+<h1>Expenses</h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<form method="POST" action="<%= (edit && edit.id) ? '/expenses/' + edit.id + '/update' : '/expenses' %>" class="form-large">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label for="expense_date">Date</label>
+  <input type="date" id="expense_date" name="expense_date" value="<%= edit ? edit.expense_date : today %>" required>
+
+  <label for="category">Category</label>
+  <input type="text" id="category" name="category" value="<%= edit ? edit.category : '' %>" placeholder="e.g. Medicine, Labor" required>
+
+  <label for="description">Description (optional)</label>
+  <input type="text" id="description" name="description" value="<%= edit && edit.description ? edit.description : '' %>">
+
+  <label for="amount">Amount (₱)</label>
+  <input type="number" step="0.01" min="0" id="amount" name="amount" value="<%= edit ? edit.amount : '' %>" required>
+
+  <button type="submit" class="btn btn-primary btn-large"><%= (edit && edit.id) ? 'Update Expense' : 'Record Expense' %></button>
+  <% if (edit && edit.id) { %><a class="btn btn-secondary" href="/expenses">Cancel</a><% } %>
+</form>
+
+<h2>Trend</h2>
+<%- include('../partials/chart-controls') %>
+<canvas id="trend-chart" data-metric="expenses" height="100"></canvas>
+
+<h2>History</h2>
+<table class="data-table">
+  <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead>
+  <tbody>
+  <% records.forEach(function(r) { %>
+    <tr>
+      <td><%= r.expense_date %></td>
+      <td><%= r.category %></td>
+      <td><%= r.description || '-' %></td>
+      <td>₱<%= Number(r.amount).toFixed(2) %></td>
+      <td>
+        <a class="btn btn-small" href="/expenses/<%= r.id %>/edit">Edit</a>
+        <form method="POST" action="/expenses/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this record?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-small btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/charts.js"></script>
+<%- include('../partials/footer') %>

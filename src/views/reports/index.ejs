@@ -1,0 +1,22 @@
+<%- include('../partials/header', { title: 'Reports' }) %>
+<h1>Reports</h1>
+<form method="GET" action="/reports/view" class="form-large">
+  <label for="module">Module</label>
+  <select id="module" name="module">
+    <option value="eggs">Egg Production</option>
+    <option value="mortality">Mortality</option>
+    <option value="feed">Feed</option>
+    <option value="sales">Sales</option>
+    <option value="expenses">Expenses</option>
+    <option value="profit">Profit Summary</option>
+  </select>
+
+  <label for="from">From</label>
+  <input type="date" id="from" name="from" value="<%= defaultFrom %>" required>
+
+  <label for="to">To</label>
+  <input type="date" id="to" name="to" value="<%= defaultTo %>" required>
+
+  <button type="submit" class="btn btn-primary btn-large">View Report</button>
+</form>
+<%- include('../partials/footer') %>

@@ -1,0 +1,35 @@
+<%- include('../partials/header', { title: 'Report' }) %>
+<h1><%= moduleLabel %> Report</h1>
+<p><%= from %> to <%= to %></p>
+
+<a class="btn btn-primary btn-large no-print" data-no-loading href="/reports/pdf?module=<%= module %>&from=<%= from %>&to=<%= to %>&granularity=<%= granularity %>">Export to PDF</a>
+<a class="btn btn-secondary no-print" href="/reports">Back</a>
+
+<h2>Summary</h2>
+<ul class="summary-list">
+  <% summary.forEach(function(s) { %>
+    <li><strong><%= s.label %>:</strong> <%= s.value %></li>
+  <% }); %>
+</ul>
+
+<h2>Trend</h2>
+<canvas id="trend-chart" data-metric="<%= chartMetric %>" height="100"></canvas>
+
+<h2>Records</h2>
+<table class="data-table">
+  <thead><tr><% columns.forEach(function(c) { %><th><%= c %></th><% }); %></tr></thead>
+  <tbody>
+    <% rows.forEach(function(row) { %>
+      <tr><% row.forEach(function(cell) { %><td><%= cell %></td><% }); %></tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  window.__chartRangeFrom = "<%= from %>";
+  window.__chartRangeTo = "<%= to %>";
+  window.__chartRangeGranularity = "<%= granularity %>";
+</script>
+<script src="/js/charts.js"></script>
+<%- include('../partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('../partials/header', { title: 'Sales' }) %>
+<h1>Sales</h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<form method="POST" action="<%= (edit && edit.id) ? '/sales/' + edit.id + '/update' : '/sales' %>" class="form-large">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label for="sale_date">Date</label>
+  <input type="date" id="sale_date" name="sale_date" value="<%= edit ? edit.sale_date : today %>" required>
+
+  <label for="item_type">Item</label>
+  <select id="item_type" name="item_type">
+    <option value="egg" <%= edit && edit.item_type === 'egg' ? 'selected' : '' %>>Eggs</option>
+    <option value="quail" <%= edit && edit.item_type === 'quail' ? 'selected' : '' %>>Quails</option>
+  </select>
+
+  <label for="quantity">Quantity</label>
+  <input type="number" min="1" id="quantity" name="quantity" value="<%= edit ? edit.quantity : 1 %>" required>
+
+  <label for="unit_price">Unit Price (₱)</label>
+  <input type="number" step="0.01" min="0" id="unit_price" name="unit_price" value="<%= edit ? edit.unit_price : '' %>" required>
+
+  <button type="submit" class="btn btn-primary btn-large"><%= (edit && edit.id) ? 'Update Sale' : 'Record Sale' %></button>
+  <% if (edit && edit.id) { %><a class="btn btn-secondary" href="/sales">Cancel</a><% } %>
+</form>
+
+<h2>Trend</h2>
+<%- include('../partials/chart-controls') %>
+<canvas id="trend-chart" data-metric="sales" height="100"></canvas>
+
+<h2>History</h2>
+<table class="data-table">
+  <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Actions</th></tr></thead>
+  <tbody>
+  <% records.forEach(function(r) { %>
+    <tr>
+      <td><%= r.sale_date %></td>
+      <td><%= r.item_type %></td>
+      <td><%= r.quantity %></td>
+      <td>₱<%= Number(r.unit_price).toFixed(2) %></td>
+      <td>₱<%= r.total.toFixed(2) %></td>
+      <td>
+        <a class="btn btn-small" href="/sales/<%= r.id %>/edit">Edit</a>
+        <form method="POST" action="/sales/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this record?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-small btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/charts.js"></script>
+<%- include('../partials/footer') %>
