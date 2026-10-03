@@ -1,16 +1,14 @@
 <header class="topbar no-print">
   <div class="brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill" class="brand-wordmark"></div>
   <nav class="main-nav">
-    <!-- Each person adds their nav link(s) here in their PR -->
-
+    <a href="/dashboard">Dashboard</a>
     <a href="/eggs">Eggs</a>
     <a href="/quail">Quail</a>
-
-    <!-- person 3: Mortality, Feed -->
-
-    <!-- person 4: Sales, Expenses -->
-
-    <!-- dashboard owner: Dashboard, Reports -->
+    <a href="/mortality">Mortality</a>
+    <a href="/feed">Feed</a>
+    <a href="/sales">Sales</a>
+    <a href="/expenses">Expenses</a>
+    <a href="/reports">Reports</a>
   </nav>
   <form method="POST" action="/auth/logout" class="logout-form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
