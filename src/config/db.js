@@ -10,7 +10,8 @@ const connectionString = process.env.DATABASE_URL;
 let pool;
 if (connectionString) {
   // Parse the connection string to avoid potential parsing issues
-  const match = connectionString.match(/^postgres:\/\/([^:]+):(.+)@(.+)$/);
+  // Handle both postgres:// and postgresql:// protocols
+  const match = connectionString.match(/^postgresq?l:\/\/([^:]+):(.+)@(.+)$/);
   if (match) {
     const user = match[1];
     const passwordAndHost = match[2];
