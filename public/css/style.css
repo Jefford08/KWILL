@@ -212,6 +212,7 @@ h2 { font-size: 1.4rem; margin-top: 2rem; }
 }
 
 .alert-error { background: #fdecea; color: #b3261e; border: 1px solid #f4c1bb; }
+.alert-success { background: #e8f5e9; color: #1b5e20; border: 1px solid #b9dfbb; }
 
 .chart-section, .summary-list {
   background: var(--color-card);

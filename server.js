@@ -2,6 +2,8 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
+const { pool } = require('./src/config/db');
 const csrf = require('./src/middleware/csrf');
 
 const authRoutes = require('./src/routes/auth');
@@ -21,7 +23,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-// Render (and most hosts) terminate HTTPS at a proxy in front of the app;
+// Vercel (and most hosts) terminate HTTPS at a proxy in front of the app;
 // this tells Express to trust that and treat the original request as secure,
 // which the session cookie's `secure` flag below depends on.
 if (isProduction) {
@@ -30,10 +32,16 @@ if (isProduction) {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'src/public')));
+// On Vercel, files in /public are served straight from the CDN and never
+// reach Express; this line serves them when running locally.
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Sessions live in Postgres rather than in memory: on Vercel each request can
+// land on a different serverless instance, so an in-memory session would
+// randomly log users out.
 app.use(
   session({
+    store: new PgSession({ pool, createTableIfMissing: true }),
     secret: process.env.SESSION_SECRET || 'kwill-dev-secret',
     resave: false,
     saveUninitialized: false,
@@ -64,33 +72,14 @@ app.use('/expenses', expensesRoutes);
 app.use('/api/charts', chartsRoutes);
 app.use('/reports', reportsRoutes);
 
-// Initialize database schema on startup
+// Initialize database schema on startup (every statement is IF NOT EXISTS,
+// so re-running it on each serverless cold start is harmless)
 (async () => {
   try {
     const fs = require('fs');
-    const path = require('path');
-    const { Client } = require('pg');
-
     const schema = fs.readFileSync(path.join(__dirname, 'src/db', 'schema.sql'), 'utf8');
-    const connectionString = process.env.DATABASE_URL;
-
-    const client = connectionString
-      ? new Client({
-          connectionString,
-          ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false },
-        })
-      : new Client({
-          host: process.env.DB_HOST || 'localhost',
-          port: process.env.DB_PORT || 5432,
-          user: process.env.DB_USER || 'postgres',
-          password: process.env.DB_PASSWORD || '',
-          database: process.env.DB_NAME || 'kwill_db',
-        });
-
-    await client.connect();
-    await client.query(schema);
+    await pool.query(schema);
     console.log('Database schema applied successfully.');
-    await client.end();
   } catch (err) {
     console.error('Failed to initialize database:', err);
     // Don't exit - let the app run and handle DB errors gracefully
@@ -113,8 +102,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+// Vercel imports the exported app and runs it as a serverless function; only
+// start a listening server when run directly (`npm start` / `npm run dev`).
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Kwill server running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Kwill server running on port ${PORT}`);
-});
+module.exports = app;

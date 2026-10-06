@@ -54,10 +54,10 @@ router.post('/register', registerLimiter, wrap(async (req, res) => {
   }
 
   try {
-    const userId = await authController.register({ name, username, email, password });
-    req.session.userId = userId;
-    req.session.userName = name;
-    res.redirect('/dashboard');
+    // Don't log the new user in here: send them to the login page so they
+    // sign in with the credentials they just created.
+    await authController.register({ name, username, email, password });
+    res.redirect('/auth/login?registered=1');
   } catch (err) {
     // Duplicate email/username, thrown by authController.register
     fail(err.message);
@@ -66,7 +66,8 @@ router.post('/register', registerLimiter, wrap(async (req, res) => {
 
 router.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/dashboard');
-  res.render('auth/login', { title: 'Log In', error: null });
+  const success = req.query.registered ? 'Account created! Please log in.' : null;
+  res.render('auth/login', { title: 'Log In', error: null, success });
 });
 
 router.post('/login', loginLimiter, wrap(async (req, res, next) => {

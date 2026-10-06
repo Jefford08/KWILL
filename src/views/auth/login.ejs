@@ -1,6 +1,9 @@
 <%- include('../partials/header', { title: 'Log In', hideNav: true }) %>
 <div class="auth-card">
   <h1>Log In to Kwill</h1>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <p class="alert alert-success"><%= success %></p>
+  <% } %>
   <% if (error) { %>
     <p class="alert alert-error"><%= error %></p>
   <% } %>
