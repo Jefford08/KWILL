@@ -31,4 +31,3 @@ test('profit subtracts expenses from sales', () => {
   assert.equal(profit(500, 320.5), 179.5);
 });
 
-//for test calculations - new note

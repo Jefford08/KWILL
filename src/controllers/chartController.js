@@ -76,8 +76,7 @@ function labelsForRange(from, to, granularity) {
   }
 }
 
-// dateCol is always one of our own hardcoded column names (never user input),
-// and granularity is normalized above, so this string is safe to interpolate.
+
 function truncColumn(dateCol, granularity) {
   switch (normalizeGranularity(granularity)) {
     case 'week':
@@ -97,8 +96,7 @@ function daysBetween(from, to) {
   return Math.round((b - a) / 86400000) + 1;
 }
 
-// Picks a sensible aggregation automatically based on the span of the range,
-// so a long date range doesn't try to plot hundreds of daily points.
+
 function suggestGranularity(from, to) {
   const span = daysBetween(from, to);
   if (span > 366) return 'year';
@@ -179,10 +177,6 @@ async function getExpensesSeries(userId, from, to, granularity) {
   return { labels, data: fillSeries(rows, labels, 'd', 'v') };
 }
 
-// Net change in stock per period: adds count positive, removes and deaths
-// count negative — the same sign convention quailController.currentPopulation
-// uses for the running total, just bucketed by period instead of summed
-// across all time.
 async function getPopulationSeries(userId, from, to, granularity) {
   const labels = labelsForRange(from, to, granularity);
   const d = truncColumn('entry_date', granularity);

@@ -11,9 +11,6 @@ function limitHandler(req, res) {
   });
 }
 
-// Slows down credential-stuffing / brute-force login attempts. Keyed by IP,
-// so it throttles per-device rather than per-account (no account lockout,
-// which would let an attacker lock a real user out just by guessing).
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -22,7 +19,6 @@ const loginLimiter = rateLimit({
   handler: limitHandler,
 });
 
-// Looser limit on registration, mainly to slow down automated account spam.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
@@ -54,14 +50,11 @@ router.post('/register', registerLimiter, wrap(async (req, res) => {
   }
 
   try {
-    // Don't log the new user in here: send them to the login page so they
-    // sign in with the credentials they just created.
+
     await authController.register({ name, username, email, password });
     res.redirect('/auth/login?registered=1');
   } catch (err) {
-    // Duplicate email/username: show it on the form. Anything else (e.g. the
-    // database being unreachable) goes to the generic error page instead of
-    // leaking technical details to the user.
+
     if (err instanceof authController.RegistrationError) return fail(err.message);
     throw err;
   }
@@ -84,8 +77,7 @@ router.post('/login', loginLimiter, wrap(async (req, res, next) => {
     return res.status(400).render('auth/login', { title: 'Log In', error: 'Invalid username or password.' });
   }
 
-  // Regenerate the session on login so a session id issued before
-  // authentication can't be reused to hijack the logged-in session.
+
   req.session.regenerate((err) => {
     if (err) return next(err);
     req.session.userId = user.id;

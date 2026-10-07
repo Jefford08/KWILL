@@ -1,7 +1,3 @@
-// Small, dependency-free server-side validation helpers. The forms use
-// browser attributes like `required`, `min`, and `type="date"`, but those
-// are easy to bypass with a direct POST request, so every value that
-// reaches a controller is re-checked here.
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -42,16 +38,10 @@ function isNonEmptyString(value, maxLength) {
   return true;
 }
 
-// Route params (:id) arrive as strings; reject anything that isn't a plain
-// positive integer before it reaches a SQL query.
 function isValidId(value) {
   return /^\d+$/.test(String(value));
 }
 
-// Realistic upper bounds for a single farm's data entry, well under the
-// DB columns' actual capacity (INT / DECIMAL(10,2)) — these exist to catch
-// mistyped or abusive input (e.g. an extra zero or two), not to constrain
-// a real farm's operation.
 const LIMITS = {
   EGGS_PER_RECORD: 50000,
   QUAIL_QUANTITY: 50000,

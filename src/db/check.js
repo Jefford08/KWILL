@@ -1,5 +1,4 @@
-// `npm run db:check`: confirms DATABASE_URL reaches the database and shows
-// which of the app's tables exist, without changing anything.
+
 require('dotenv').config();
 const { pool } = require('../config/db');
 

@@ -11,8 +11,6 @@ async function findByUsername(username) {
   return rows[0];
 }
 
-// A problem with what the user entered (as opposed to a database outage),
-// safe to show back to them on the form.
 class RegistrationError extends Error {}
 
 async function register({ name, username, email, password }) {
@@ -30,8 +28,7 @@ async function register({ name, username, email, password }) {
     );
     return rows[0].id;
   } catch (err) {
-    // 23505 = unique violation: someone registered the same email/username
-    // between the checks above and this insert.
+
     if (err.code === '23505') {
       throw new RegistrationError('That username or email is already taken.');
     }

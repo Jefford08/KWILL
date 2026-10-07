@@ -48,7 +48,6 @@ h2 { font-size: 1.4rem; margin-top: 2rem; }
   vertical-align: middle;
 }
 
-/* the wordmark's green matches the topbar background, so render it white there */
 .topbar .brand-wordmark { filter: brightness(0) invert(1); }
 
 .main-nav {

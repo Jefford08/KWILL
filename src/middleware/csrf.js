@@ -10,8 +10,7 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-// Issues a per-session token and exposes it to every view as `csrfToken`,
-// so forms can carry it as a hidden field.
+
 function attachToken(req, res, next) {
   if (req.session && !req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
@@ -20,9 +19,6 @@ function attachToken(req, res, next) {
   next();
 }
 
-// Rejects state-changing requests whose submitted token doesn't match the
-// one issued to that session, so a form on another site can't silently
-// submit into this app using the victim's logged-in session cookie.
 function verifyToken(req, res, next) {
   if (!MUTATING_METHODS.has(req.method)) return next();
   const sessionToken = req.session && req.session.csrfToken;

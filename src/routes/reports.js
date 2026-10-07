@@ -8,11 +8,7 @@ const chartController = require('../controllers/chartController');
 
 async function launchBrowser() {
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    // Serverless hosts (Vercel) can't ship a full Chrome install inside a
-    // function, so in production we use a pre-packaged Chromium
-    // binary (@sparticuz/chromium) with puppeteer-core instead.
-    // @sparticuz/chromium is published as an ESM-only package; requiring it from
-    // CommonJS wraps the real export under `.default` instead of spreading it.
+
     const chromiumModule = require('@sparticuz/chromium');
     const chromium = chromiumModule.default || chromiumModule;
     const puppeteerCore = require('puppeteer-core');
@@ -85,8 +81,7 @@ router.get('/pdf', async (req, res) => {
     const granularity = req.query.granularity
       ? chartController.normalizeGranularity(req.query.granularity)
       : chartController.suggestGranularity(from, to);
-    // On Vercel there is no long-running server listening on a local port, so
-    // headless Chrome loads the report page through the public host instead.
+
     const origin = process.env.VERCEL
       ? `https://${req.get('host')}`
       : `http://127.0.0.1:${process.env.PORT || 3000}`;

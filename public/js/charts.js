@@ -58,8 +58,6 @@
   const fromInput = document.getElementById('chart-from');
   const toInput = document.getElementById('chart-to');
 
-  // Seed the date inputs with a sensible default (last 30 days) if the page
-  // didn't already supply a range.
   if (fromInput && toInput && (!fromInput.value || !toInput.value)) {
     const range = defaultRangeClient(30);
     fromInput.value = fromInput.value || range.from;
@@ -77,8 +75,6 @@
     };
   }
 
-  // No manual granularity control — auto-pick one from the range's span so a
-  // long date range doesn't try to plot hundreds of daily points.
   function getGranularity() {
     const params = new URLSearchParams(window.location.search);
     if (window.__chartRangeGranularity) return window.__chartRangeGranularity;

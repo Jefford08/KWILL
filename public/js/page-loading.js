@@ -6,13 +6,12 @@
   var safetyTimer = null;
 
   function show() {
-    // Small delay so a fast response doesn't just flash the overlay.
+
     showTimer = setTimeout(function () {
       overlay.classList.add('visible');
       overlay.setAttribute('aria-hidden', 'false');
     }, 150);
-    // In case navigation never completes (e.g. the request errors without
-    // reloading the page), don't leave the overlay stuck forever.
+
     safetyTimer = setTimeout(hide, 60000);
   }
 
@@ -48,8 +47,6 @@
     show();
   });
 
-  // Page restored from the browser's back/forward cache never re-runs this
-  // script's initial state, so make sure a lingering overlay clears.
   window.addEventListener('pageshow', function (event) {
     if (event.persisted) hide();
   });
