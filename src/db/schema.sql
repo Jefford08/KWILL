@@ -64,3 +64,25 @@ CREATE TABLE IF NOT EXISTS expenses (
   amount DECIMAL(10, 2) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Login sessions (used by connect-pg-simple in server.js). Same layout as the
+-- package's own table.sql, created here so RLS below can cover it too.
+CREATE TABLE IF NOT EXISTS "session" (
+  "sid" VARCHAR NOT NULL PRIMARY KEY,
+  "sess" JSON NOT NULL,
+  "expire" TIMESTAMP(6) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+
+-- Supabase exposes every table in the public schema through its REST API
+-- using the project's public anon key. Turning on Row Level Security with no
+-- policies blocks that API entirely; the app itself still has full access
+-- because it connects directly as the tables' owner, which RLS doesn't apply to.
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quail_population ENABLE ROW LEVEL SECURITY;
+ALTER TABLE egg_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE feed_purchases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE feed_consumption ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "session" ENABLE ROW LEVEL SECURITY;

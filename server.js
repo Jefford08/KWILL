@@ -106,8 +106,18 @@ app.use((err, req, res, next) => {
 // start a listening server when run directly (`npm start` / `npm run dev`).
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Kwill server running on port ${PORT}`);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Kwill server running on http://localhost:${PORT}`);
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(
+        `Port ${PORT} is already in use; Kwill is probably already running in another terminal.\n` +
+        `Stop that one (Ctrl+C in its terminal) or use another port (PowerShell: $env:PORT=3001; npm run dev)`
+      );
+      process.exit(1);
+    }
+    throw err;
   });
 }
 

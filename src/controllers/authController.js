@@ -11,19 +11,32 @@ async function findByUsername(username) {
   return rows[0];
 }
 
+// A problem with what the user entered (as opposed to a database outage),
+// safe to show back to them on the form.
+class RegistrationError extends Error {}
+
 async function register({ name, username, email, password }) {
   if (await findByEmail(email)) {
-    throw new Error('An account with that email already exists.');
+    throw new RegistrationError('An account with that email already exists.');
   }
   if (await findByUsername(username)) {
-    throw new Error('That username is already taken.');
+    throw new RegistrationError('That username is already taken.');
   }
   const hash = await bcrypt.hash(password, 10);
-  const [rows] = await pool.query(
-    'INSERT INTO users (name, username, email, password_hash) VALUES (?, ?, ?, ?) RETURNING id',
-    [name, username, email, hash]
-  );
-  return rows[0].id;
+  try {
+    const [rows] = await pool.query(
+      'INSERT INTO users (name, username, email, password_hash) VALUES (?, ?, ?, ?) RETURNING id',
+      [name, username, email, hash]
+    );
+    return rows[0].id;
+  } catch (err) {
+    // 23505 = unique violation: someone registered the same email/username
+    // between the checks above and this insert.
+    if (err.code === '23505') {
+      throw new RegistrationError('That username or email is already taken.');
+    }
+    throw err;
+  }
 }
 
 async function verifyLogin(username, password) {
@@ -33,4 +46,4 @@ async function verifyLogin(username, password) {
   return match ? user : null;
 }
 
-module.exports = { register, verifyLogin, findByEmail, findByUsername };
+module.exports = { register, verifyLogin, findByEmail, findByUsername, RegistrationError };

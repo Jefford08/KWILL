@@ -5,20 +5,33 @@ const { Pool, types } = require('pg');
 // them as strings instead. OID 1082 = the `date` type.
 types.setTypeParser(1082, (val) => val);
 
-const connectionString = process.env.DATABASE_URL;
+// The database is hosted on Supabase (a managed PostgreSQL). DATABASE_URL is
+// the Supabase connection string from Project Settings -> Database -> Connect.
+// On Vercel use the "Transaction pooler" string (port 6543): serverless
+// functions open many short-lived connections and the pooler shares a small
+// number of real ones between them. See .env.example.
+// POSTGRES_URL is the name Vercel's Supabase integration sets automatically.
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
-// Hosted Postgres (Neon, Supabase, Render, etc.) needs SSL; a local server
-// usually doesn't. pg parses the URL itself, including passwords with
-// special characters as long as they're percent-encoded.
 const isLocal = (url) => /@(localhost|127\.0\.0\.1)(:|\/)/.test(url);
+
+// An `sslmode=` in the URL would override the `ssl` option below and make pg
+// verify Supabase's certificate chain strictly, which fails without their CA
+// file, so it's dropped and SSL is configured here instead.
+function withoutSslMode(url) {
+  return url.replace(/([?&])sslmode=[^&]*&?/, '$1').replace(/[?&]$/, '');
+}
 
 const pool = connectionString
   ? new Pool({
-      connectionString,
+      connectionString: withoutSslMode(connectionString),
+      // Supabase only accepts encrypted connections; a local server usually
+      // isn't set up for SSL at all.
       ssl: isLocal(connectionString) ? false : { rejectUnauthorized: false },
-      // Serverless functions run many short-lived instances; keep each
-      // instance's pool small so they don't exhaust the database's connections.
+      // Keep each serverless instance's pool small so many instances together
+      // stay within Supabase's connection limit.
       max: process.env.VERCEL ? 3 : 10,
+      connectionTimeoutMillis: 10000,
     })
   : new Pool({
       host: process.env.DB_HOST || 'localhost',

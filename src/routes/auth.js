@@ -59,8 +59,11 @@ router.post('/register', registerLimiter, wrap(async (req, res) => {
     await authController.register({ name, username, email, password });
     res.redirect('/auth/login?registered=1');
   } catch (err) {
-    // Duplicate email/username, thrown by authController.register
-    fail(err.message);
+    // Duplicate email/username: show it on the form. Anything else (e.g. the
+    // database being unreachable) goes to the generic error page instead of
+    // leaking technical details to the user.
+    if (err instanceof authController.RegistrationError) return fail(err.message);
+    throw err;
   }
 }));
 
