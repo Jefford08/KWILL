@@ -74,10 +74,33 @@ CREATE TABLE IF NOT EXISTS "session" (
 );
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
 
--- Supabase exposes every table in the public schema through its REST API
--- using the project's public anon key. Turning on Row Level Security with no
--- policies blocks that API entirely; the app itself still has full access
--- because it connects directly as the tables' owner, which RLS doesn't apply to.
+CREATE TABLE IF NOT EXISTS verification_codes (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose VARCHAR(20) NOT NULL CHECK (purpose IN ('reset', 'change', 'verify')),
+  code_hash CHAR(64) NOT NULL,
+  attempts INT NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON verification_codes (user_id, purpose, created_at DESC);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'verification_codes_purpose_check'
+       AND pg_get_constraintdef(oid) LIKE '%verify%'
+  ) THEN
+    ALTER TABLE verification_codes DROP CONSTRAINT IF EXISTS verification_codes_purpose_check;
+    ALTER TABLE verification_codes ADD CONSTRAINT verification_codes_purpose_check
+      CHECK (purpose IN ('reset', 'change', 'verify'));
+  END IF;
+END $$;
+
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quail_population ENABLE ROW LEVEL SECURITY;
 ALTER TABLE egg_records ENABLE ROW LEVEL SECURITY;
@@ -86,3 +109,4 @@ ALTER TABLE feed_consumption ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "session" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_codes ENABLE ROW LEVEL SECURITY;

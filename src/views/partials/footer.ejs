@@ -1,3 +1,18 @@
-</main>
+    </main>
+  </div>
+</div>
+<%# Confirmation dialog used by any <form data-confirm="..."> (deletes, sign out). Filled in by app.js. %>
+<dialog class="modal" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+  <form method="dialog" class="modal-body" data-no-loading>
+    <span class="modal-icon"><span data-icon="trash"><%- include('icon', { name: 'trash' }) %></span><span data-icon="logout" hidden><%- include('icon', { name: 'logout' }) %></span></span>
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p id="confirm-message"></p>
+    <div class="modal-actions">
+      <button type="submit" value="cancel" class="btn btn-secondary" data-dialog-cancel>Cancel</button>
+      <button type="submit" value="ok" class="btn btn-danger" data-dialog-ok>Delete</button>
+    </div>
+  </form>
+</dialog>
+<script src="/js/app.js"></script>
 </body>
 </html>

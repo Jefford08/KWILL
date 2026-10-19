@@ -1,0 +1,28 @@
+<%#
+  Step 2 of a password reset / change: enter the emailed 6-digit code.
+  Locals: layout ('auth'|'app'), email (masked), action, resendAction,
+  cooldown (seconds until resend allowed), backHref, backLabel.
+%>
+<%- include('../partials/header', { title: 'Enter verification code' }) %>
+<% var inApp = layout === 'app'; %>
+<% if (inApp) { %><a href="<%= backHref %>" class="back-link"><%- include('../partials/icon', { name: 'arrowLeft' }) %><%= backLabel %></a><% } %>
+<div class="<%= inApp ? 'card content-narrow' : 'auth-card' %>"<%- inApp ? ' style="max-width:480px;margin:0"' : '' %>>
+  <div class="auth-icon"><%- include('../partials/icon', { name: 'mail' }) %></div>
+  <h1 style="text-align:center;font-size:1.35rem"><%= typeof heading !== 'undefined' ? heading : 'Check your email' %></h1>
+  <p class="auth-sub">We sent a 6-digit code to <strong><%= email %></strong>. It expires in 10 minutes.</p>
+  <form method="POST" action="<%= action %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="code">Verification code</label>
+      <input type="text" id="code" name="code" class="code-input" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required autofocus data-code-input>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Verify code</button>
+  </form>
+  <form method="POST" action="<%= resendAction %>" class="auth-foot">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    Didn't get it? Check your spam folder, or
+    <button type="submit" class="btn-link" data-cooldown="<%= cooldown %>">send a new code</button>
+  </form>
+  <% if (!inApp) { %><p class="auth-foot" style="margin-top:8px"><a href="<%= backHref %>"><%= backLabel %></a></p><% } %>
+</div>
+<%- include('../partials/footer') %>

@@ -2,14 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { requireLogin } = require('../middleware/auth');
 const wrap = require('../utils/wrap');
+const { today } = require('../utils/dates');
 const { isValidDateStr, isPositiveInt, isNonNegativeNumber, isValidId, LIMITS } = require('../utils/validate');
 const salesController = require('../controllers/salesController');
 
 router.use(requireLogin);
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function validEntry(body) {
   const { sale_date, item_type, quantity, unit_price } = body;
@@ -25,44 +22,47 @@ function validEntry(body) {
 }
 
 router.get('/', wrap(async (req, res) => {
-  const records = await salesController.listSales(req.session.userId);
-  res.render('sales/index', { title: 'Sales', records, edit: null, error: null, today: today() });
+  const { rows: records, page } = await salesController.listSales(req.session.userId, req.query);
+  res.render('sales/index', { title: 'Sales', records, page, edit: null, error: null, today: today() });
 }));
 
 router.post('/', wrap(async (req, res) => {
   const error = validEntry(req.body);
   if (error) {
-    const records = await salesController.listSales(req.session.userId);
-    return res.status(400).render('sales/index', { title: 'Sales', records, edit: req.body, error, today: today() });
+    const { rows: records, page } = await salesController.listSales(req.session.userId, req.query);
+    return res.status(400).render('sales/index', { title: 'Sales', records, page, edit: req.body, error, today: today() });
   }
-  await salesController.createSale(req.session.userId, req.body);
+  const newId = await salesController.createSale(req.session.userId, req.body);
+  req.flash('success', 'Sale saved.', { highlight: newId });
   res.redirect('/sales');
 }));
 
 router.get('/:id/edit', wrap(async (req, res) => {
   if (!isValidId(req.params.id)) return res.redirect('/sales');
-  const records = await salesController.listSales(req.session.userId);
+  const { rows: records, page } = await salesController.listSales(req.session.userId, req.query);
   const edit = await salesController.getSale(req.session.userId, req.params.id);
   if (!edit) return res.redirect('/sales');
-  res.render('sales/index', { title: 'Sales', records, edit, error: null, today: today() });
+  res.render('sales/index', { title: 'Sales', records, page, edit, error: null, today: today() });
 }));
 
 router.post('/:id/update', wrap(async (req, res) => {
   if (!isValidId(req.params.id)) return res.redirect('/sales');
   const error = validEntry(req.body);
   if (error) {
-    const records = await salesController.listSales(req.session.userId);
+    const { rows: records, page } = await salesController.listSales(req.session.userId, req.query);
     return res.status(400).render('sales/index', {
-      title: 'Sales', records, edit: { id: req.params.id, ...req.body }, error, today: today(),
+      title: 'Sales', records, page, edit: { id: req.params.id, ...req.body }, error, today: today(),
     });
   }
   await salesController.updateSale(req.session.userId, req.params.id, req.body);
+  req.flash('success', 'Sale updated.', { highlight: req.params.id });
   res.redirect('/sales');
 }));
 
 router.post('/:id/delete', wrap(async (req, res) => {
   if (!isValidId(req.params.id)) return res.redirect('/sales');
   await salesController.deleteSale(req.session.userId, req.params.id);
+  req.flash('success', 'Sale deleted.');
   res.redirect('/sales');
 }));
 

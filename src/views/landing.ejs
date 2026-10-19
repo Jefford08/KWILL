@@ -1,23 +1,18 @@
-<%- include('partials/header', { title: 'Welcome', hideNav: true, bodyClass: 'landing-page' }) %>
+<%- include('partials/header', { title: 'Quail farm management', layout: 'auth' }) %>
 <div class="landing">
-  <div class="landing-hero">
-    <div class="landing-brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill" class="brand-wordmark"></div>
+  <div>
+    <a href="/" class="landing-logo"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill"></a>
+    <span class="landing-eyebrow">Quail farm management</span>
     <h1>Run your quail farm from one screen.</h1>
-    <p class="landing-sub">
-      Eggs, mortality, feed, sales and expenses, logged in seconds and tracked over time.
-      See where the farm stands today, and export a report when you need one.
-    </p>
-    <div class="landing-stats">
-      <span class="landing-stat">Egg production</span>
-      <span class="landing-stat">Mortality trends</span>
-      <span class="landing-stat">₱ Profit at a glance</span>
-    </div>
+    <p class="landing-sub">Log eggs, quail counts, feed, sales and expenses in seconds, then see exactly where the farm stands, with reports you can export any time.</p>
   </div>
-  <div class="landing-card">
-    <h2>Welcome back</h2>
-    <p>Log in to see today's numbers, or create an account to get started.</p>
-    <a class="btn btn-primary btn-large landing-btn" href="/auth/login">Log In</a>
-    <a class="btn btn-outline btn-large landing-btn" href="/auth/register">Create New Account</a>
+
+  <div class="auth-card">
+    <h2 style="font-size:1.25rem">Get started</h2>
+    <p class="muted" style="margin:6px 0 22px">Log in to see today's numbers, or create a free account.</p>
+    <a class="btn btn-primary btn-lg btn-block" href="/auth/login">Log in</a>
+    <a class="btn btn-secondary btn-lg btn-block" href="/auth/register">Create an account</a>
+    <p class="auth-legal">By continuing you agree to our <a href="/privacy">Privacy Policy</a>.</p>
   </div>
 </div>
 <%- include('partials/footer') %>

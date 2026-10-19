@@ -1,8 +1,12 @@
 const pool = require('../config/db');
+const { paginate, dateRange } = require('../utils/paging');
 
-async function listExpenses(userId) {
-  const [rows] = await pool.query('SELECT * FROM expenses WHERE user_id = ? ORDER BY expense_date DESC, id DESC', [userId]);
-  return rows;
+async function listExpenses(userId, query) {
+  return paginate(query, {
+    countSql: `SELECT COUNT(*) AS n FROM expenses WHERE user_id = ? AND ${dateRange('expense_date')}`,
+    rowsSql: `SELECT * FROM expenses WHERE user_id = ? AND ${dateRange('expense_date')} ORDER BY expense_date DESC, id DESC`,
+    params: (from, to) => [userId, from, to],
+  });
 }
 
 async function getExpense(userId, id) {
@@ -11,10 +15,11 @@ async function getExpense(userId, id) {
 }
 
 async function createExpense(userId, { expense_date, category, description, amount }) {
-  await pool.query(
-    'INSERT INTO expenses (user_id, expense_date, category, description, amount) VALUES (?, ?, ?, ?, ?)',
+  const [rows] = await pool.query(
+    'INSERT INTO expenses (user_id, expense_date, category, description, amount) VALUES (?, ?, ?, ?, ?) RETURNING id',
     [userId, expense_date, category, description || null, amount]
   );
+  return rows[0].id;
 }
 
 async function updateExpense(userId, id, { expense_date, category, description, amount }) {

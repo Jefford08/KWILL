@@ -132,25 +132,35 @@ async function buildReport(userId, moduleName, from, to) {
         'SELECT expense_date AS d, SUM(amount) AS v FROM expenses WHERE user_id = ? AND expense_date BETWEEN ? AND ? GROUP BY expense_date',
         [userId, from, to]
       );
+      const [feedRows] = await pool.query(
+        'SELECT purchase_date AS d, SUM(cost) AS v FROM feed_purchases WHERE user_id = ? AND purchase_date BETWEEN ? AND ? GROUP BY purchase_date',
+        [userId, from, to]
+      );
       const salesMap = new Map(salesRows.map((r) => [r.d, Number(r.v)]));
       const expenseMap = new Map(expenseRows.map((r) => [r.d, Number(r.v)]));
-      const allDates = Array.from(new Set([...salesMap.keys(), ...expenseMap.keys()])).sort();
+      const feedMap = new Map(feedRows.map((r) => [r.d, Number(r.v)]));
+      const allDates = Array.from(new Set([...salesMap.keys(), ...expenseMap.keys(), ...feedMap.keys()])).sort();
       let totalSales = 0;
       let totalExpenses = 0;
+      let totalFeed = 0;
+      const peso = (n) => '₱' + n.toFixed(2);
       const tableRows = allDates.map((d) => {
         const s = salesMap.get(d) || 0;
         const e = expenseMap.get(d) || 0;
+        const f = feedMap.get(d) || 0;
         totalSales += s;
         totalExpenses += e;
-        return [d, '₱' + s.toFixed(2), '₱' + e.toFixed(2), '₱' + calcProfit(s, e).toFixed(2)];
+        totalFeed += f;
+        return [d, peso(s), peso(f), peso(e), peso(calcProfit(s, e + f))];
       });
       return {
-        columns: ['Date', 'Sales', 'Expenses', 'Profit'],
+        columns: ['Date', 'Sales', 'Feed', 'Other Expenses', 'Profit'],
         rows: tableRows,
         summary: [
-          { label: 'Total Sales', value: '₱' + totalSales.toFixed(2) },
-          { label: 'Total Expenses', value: '₱' + totalExpenses.toFixed(2) },
-          { label: 'Total Profit', value: '₱' + calcProfit(totalSales, totalExpenses).toFixed(2) },
+          { label: 'Total Sales', value: peso(totalSales) },
+          { label: 'Feed Costs', value: peso(totalFeed) },
+          { label: 'Other Expenses', value: peso(totalExpenses) },
+          { label: 'Total Profit', value: peso(calcProfit(totalSales, totalExpenses + totalFeed)) },
         ],
         chartMetric: 'profit',
       };

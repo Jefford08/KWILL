@@ -1,22 +1,45 @@
 <%- include('../partials/header', { title: 'Reports' }) %>
-<h1>Reports</h1>
-<form method="GET" action="/reports/view" class="form-large">
-  <label for="module">Module</label>
-  <select id="module" name="module">
-    <option value="eggs">Egg Production</option>
-    <option value="mortality">Mortality</option>
-    <option value="feed">Feed</option>
-    <option value="sales">Sales</option>
-    <option value="expenses">Expenses</option>
-    <option value="profit">Profit Summary</option>
-  </select>
+<%
+  var MODULES = [
+    { value: 'eggs', label: 'Egg production', icon: 'egg', cls: 'stat--amber' },
+    { value: 'mortality', label: 'Mortality', icon: 'heart', cls: 'stat--red' },
+    { value: 'feed', label: 'Feed', icon: 'feed', cls: 'stat--amber' },
+    { value: 'sales', label: 'Sales', icon: 'sales', cls: 'stat--blue' },
+    { value: 'expenses', label: 'Expenses', icon: 'expenses', cls: 'stat--red' },
+    { value: 'profit', label: 'Profit summary', icon: 'trend', cls: 'stat--violet' },
+  ];
+%>
+<div class="page-head">
+  <div>
+    <h1>Reports</h1>
+    <p>Summaries, trends and full records for any date range, ready to export as PDF.</p>
+  </div>
+</div>
 
-  <label for="from">From</label>
-  <input type="date" id="from" name="from" value="<%= defaultFrom %>" required>
-
-  <label for="to">To</label>
-  <input type="date" id="to" name="to" value="<%= defaultTo %>" required>
-
-  <button type="submit" class="btn btn-primary btn-large">View Report</button>
-</form>
+<section class="card content-narrow" style="margin: 0">
+  <form method="GET" action="/reports/view" class="form">
+    <div class="field">
+      <span class="label" id="module-label">Report type</span>
+      <div class="module-picker" role="radiogroup" aria-labelledby="module-label">
+        <% MODULES.forEach(function (m, i) { %>
+          <div class="<%= m.cls %>">
+            <input type="radio" id="module-<%= m.value %>" name="module" value="<%= m.value %>" <%= i === 0 ? 'checked' : '' %>>
+            <label for="module-<%= m.value %>"><span class="stat-icon"><%- include('../partials/icon', { name: m.icon }) %></span><%= m.label %></label>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="from">From</label>
+        <input type="date" id="from" name="from" value="<%= defaultFrom %>" required>
+      </div>
+      <div class="field">
+        <label for="to">To</label>
+        <input type="date" id="to" name="to" value="<%= defaultTo %>" required>
+      </div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">View report</button></div>
+  </form>
+</section>
 <%- include('../partials/footer') %>

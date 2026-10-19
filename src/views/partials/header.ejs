@@ -1,18 +1,37 @@
-<!DOCTYPE html>
+<%
+  var pageLayout = typeof layout !== 'undefined' ? layout : 'app';
+%><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title : 'Kwill' %> - Kwill</title>
+  <meta name="theme-color" content="#2f6f3e">
+  <title><%= typeof title !== 'undefined' ? title + ' · Kwill' : 'Kwill' %></title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body<% if (typeof bodyClass !== 'undefined') { %> class="<%= bodyClass %>"<% } %>>
-<div id="page-loading" class="page-loading" aria-hidden="true">
-  <div class="page-loading-spinner"></div>
-  <p class="page-loading-text">Loading&hellip;</p>
-</div>
+<body class="layout-<%= pageLayout %><% if (typeof bodyClass !== 'undefined') { %> <%= bodyClass %><% } %>">
+<div id="nav-progress" class="nav-progress" aria-hidden="true"></div>
 <script src="/js/page-loading.js"></script>
-<% if (typeof hideNav === 'undefined' || !hideNav) { %>
+<% if (pageLayout === 'app') { %>
+<div class="shell">
   <%- include('nav') %>
+  <div class="shell-main">
+    <header class="mobile-bar no-print">
+      <button type="button" class="icon-btn" data-sidebar-open aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><%- include('icon', { name: 'menu' }) %></button>
+      <a href="/home" class="mobile-brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill"></a>
+    </header>
+    <main class="content" id="main">
+<% } else if (pageLayout === 'doc') { %>
+<header class="doc-bar">
+  <a href="/" class="doc-brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill"></a>
+  <a href="/auth/login" class="btn btn-ghost btn-sm">Log in</a>
+</header>
+<div class="shell-main">
+    <main class="content content-narrow" id="main">
+<% } else { %>
+<div class="auth-shell">
+  <div class="shell-main">
+    <main class="auth-main" id="main">
 <% } %>
-<main class="container">
+      <%- include('flash') %>

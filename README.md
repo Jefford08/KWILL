@@ -1,9 +1,10 @@
 
 # Kwill — Quail Farm Management System
 
-A web app for managing a quail farm: user accounts, a dashboard of key stats, egg
-production tracking, quail population & mortality tracking, feed logging, sales &
-expenses, trend charts, and PDF report export.
+A web app for managing a quail farm: user accounts with email-verified password reset
+and change, a Home overview of key stats, egg production tracking, flock & mortality
+tracking, feed logging, sales & expenses, trend charts, PDF report export, and account
+settings with a privacy policy.
 
 ## System Architecture
 

@@ -42,6 +42,19 @@ function isValidId(value) {
   return /^\d+$/.test(String(value));
 }
 
+function isValidEmail(value) {
+  return typeof value === 'string' && value.length <= 150 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function accountFieldsError({ name, username, email }) {
+  if (!isNonEmptyString(name, 100)) return 'Enter your full name (up to 100 characters).';
+  if (typeof username !== 'string' || username.length < 3 || username.length > 20) {
+    return 'Username must be between 3 and 20 characters.';
+  }
+  if (!isValidEmail(email)) return 'Enter a valid email address.';
+  return null;
+}
+
 const LIMITS = {
   EGGS_PER_RECORD: 50000,
   QUAIL_QUANTITY: 50000,
@@ -60,5 +73,7 @@ module.exports = {
   isNonNegativeNumber,
   isNonEmptyString,
   isValidId,
+  isValidEmail,
+  accountFieldsError,
   LIMITS,
 };

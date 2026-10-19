@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { requireLogin } = require('../middleware/auth');
 const wrap = require('../utils/wrap');
+const { captureError } = require('../config/sentry');
 const { isValidDateStr } = require('../utils/validate');
+const { today } = require('../utils/dates');
 const reportController = require('../controllers/reportController');
 const chartController = require('../controllers/chartController');
 
@@ -23,10 +25,10 @@ async function launchBrowser() {
 }
 
 function defaultDates() {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(from.getDate() - 29);
-  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+  const to = today();
+  const from = new Date(`${to}T00:00:00Z`);
+  from.setUTCDate(from.getUTCDate() - 29);
+  return { from: from.toISOString().slice(0, 10), to };
 }
 
 router.use(requireLogin);
@@ -58,7 +60,7 @@ router.get('/view', wrap(async (req, res) => {
     : chartController.suggestGranularity(from, to);
   const report = await reportController.buildReport(req.session.userId, moduleName, from, to);
   res.render('reports/view', {
-    title: 'Report',
+    title: `${reportController.MODULE_LABELS[moduleName]} report`,
     module: moduleName,
     moduleLabel: reportController.MODULE_LABELS[moduleName] || moduleName,
     from,
@@ -114,7 +116,7 @@ router.get('/pdf', async (req, res) => {
     res.send(pdfBuffer);
   } catch (err) {
     if (browser) await browser.close();
-    console.error('PDF export failed:', err);
+    await captureError(err, req, 'PDF export failed');
     res.status(500).render('error', {
       title: 'PDF export failed',
       message: 'Something went wrong generating the PDF. Please try again.',

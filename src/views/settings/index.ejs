@@ -1,0 +1,91 @@
+<%- include('../partials/header', { title: 'Settings' }) %>
+<%
+  var v = typeof values !== 'undefined' && values ? values : user;
+  var initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+%>
+<div class="page-head">
+  <div>
+    <h1>Settings</h1>
+    <p>Manage your account details, password and privacy.</p>
+  </div>
+</div>
+
+<div class="stack content-narrow" style="margin:0">
+  <section class="card">
+    <div class="profile-summary">
+      <span class="avatar avatar-lg" aria-hidden="true"><%= initials %></span>
+      <div>
+        <h2><%= user.name %></h2>
+        <p>@<%= user.username %> · <%= user.email %></p>
+        <p class="subtle">Member since <%= formatDate(user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at) %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="profile">
+    <div class="card-head"><div><h2>Account details</h2><p>The information you entered when you created your account.</p></div></div>
+    <form method="POST" action="/settings/profile" class="form" id="profile-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" value="<%= v.name %>" autocomplete="name" maxlength="100" required>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" value="<%= v.username %>" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="20" required>
+          <p class="field-hint">You use this to log in.</p>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= v.email %>" data-original="<%= user.email %>" data-reveal-on-change="email-confirm" autocomplete="email" maxlength="150" required>
+          <p class="field-hint">Verification codes are sent here.</p>
+        </div>
+      </div>
+      <div class="field" id="email-confirm" <%= typeof showPasswordConfirm !== 'undefined' && showPasswordConfirm ? '' : 'hidden' %>>
+        <label for="current_password">Current password</label>
+        <div class="password-field">
+          <input type="password" id="current_password" name="current_password" autocomplete="current-password">
+          <button type="button" class="password-toggle" data-target="current_password" aria-label="Show password" aria-pressed="false"></button>
+        </div>
+        <p class="field-hint">Changing your email needs your current password, so nobody else can take over your account.</p>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card" id="security">
+    <div class="card-head"><div><h2>Security</h2></div></div>
+    <div class="setting-row">
+      <div class="setting-row-main">
+        <span class="stat-icon"><%- include('../partials/icon', { name: 'lock' }) %></span>
+        <div>
+          <h3>Password</h3>
+          <p>To change it, we'll first email a verification code to <strong><%= user.email %></strong>.</p>
+        </div>
+      </div>
+      <form method="POST" action="/settings/password/send" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-secondary">Change password</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="card" id="privacy">
+    <div class="card-head"><div><h2>Privacy</h2></div></div>
+    <div class="setting-row">
+      <div class="setting-row-main">
+        <span class="stat-icon"><%- include('../partials/icon', { name: 'shield' }) %></span>
+        <div>
+          <h3>Privacy Policy</h3>
+          <p>What Kwill stores, why, and the choices you have. We only keep what's needed to run your account, and we never sell your data.</p>
+        </div>
+      </div>
+      <a class="btn btn-secondary" href="/privacy">Read policy</a>
+    </div>
+  </section>
+</div>
+
+<%- include('../partials/footer') %>

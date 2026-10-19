@@ -1,0 +1,79 @@
+<%- include('partials/header', { title: 'Home' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= greeting %><%= firstName ? ', ' + firstName : '' %></h1>
+    <p><%= longToday %> · Here's how the farm is doing this month.</p>
+  </div>
+</div>
+
+<section class="stats stats-4" aria-label="Farm summary">
+  <a class="stat" href="/quail">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'quail' }) %></span>
+    <span class="stat-label">Quail size</span>
+    <span class="stat-value"><%= number(stats.totalQuails) %></span>
+    <span class="stat-note">quails right now</span>
+  </a>
+  <a class="stat stat--amber" href="/eggs">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'egg' }) %></span>
+    <span class="stat-label">Eggs today</span>
+    <span class="stat-value"><%= number(stats.eggsToday) %></span>
+    <span class="stat-note"><%= number(stats.eggsMonth) %> this month</span>
+  </a>
+  <a class="stat stat--red" href="/quail">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'heart' }) %></span>
+    <span class="stat-label">Deaths this month</span>
+    <span class="stat-value"><%= number(stats.deathsMonth) %></span>
+    <span class="stat-note"><%= number(stats.deathsTotal) %> recorded in total</span>
+  </a>
+  <a class="stat stat--amber" href="/feed">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'feed' }) %></span>
+    <span class="stat-label">Feed used this month</span>
+    <span class="stat-value"><%= number(stats.feedUsedMonth) %><small>kg</small></span>
+    <span class="stat-note">from consumption records</span>
+  </a>
+</section>
+
+<section class="stats stats-3" aria-label="This month's money">
+  <a class="stat stat--blue" href="/sales">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'sales' }) %></span>
+    <span class="stat-label">Sales this month</span>
+    <span class="stat-value"><%= money(stats.salesMonth) %></span>
+    <span class="stat-note">eggs and quails sold</span>
+  </a>
+  <a class="stat stat--red" href="/expenses">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'expenses' }) %></span>
+    <span class="stat-label">Costs this month</span>
+    <span class="stat-value"><%= money(stats.costsMonth) %></span>
+    <span class="stat-note"><%= money(stats.feedCostMonth) %> feed · <%= money(stats.expensesMonth) %> other</span>
+  </a>
+  <a class="stat stat--violet" href="/reports">
+    <span class="stat-icon"><%- include('partials/icon', { name: 'trend' }) %></span>
+    <span class="stat-label">Profit this month</span>
+    <span class="stat-value<%= stats.profitMonth < 0 ? ' negative' : '' %>"><%= money(stats.profitMonth) %></span>
+    <span class="stat-note">sales minus all costs</span>
+  </a>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2>Trends</h2>
+      <p>Pick the measures to compare over time.</p>
+    </div>
+    <%- include('partials/chart-controls') %>
+  </div>
+  <div id="metric-checkboxes" class="metric-toggles" role="group" aria-label="Measures to show">
+    <label class="metric-toggle metric-toggle-all" style="--swatch:#17231a"><input type="checkbox" value="all" data-metric-all><span>All</span></label>
+    <span class="metric-divider" aria-hidden="true"></span>
+    <label class="metric-toggle" style="--swatch:#2f6f3e"><input type="checkbox" value="eggs" checked><span>Eggs</span></label>
+    <label class="metric-toggle" style="--swatch:#c0362c"><input type="checkbox" value="mortality"><span>Mortality</span></label>
+    <label class="metric-toggle" style="--swatch:#a86a12"><input type="checkbox" value="feed"><span>Feed used</span></label>
+    <label class="metric-toggle" style="--swatch:#1d4ed8"><input type="checkbox" value="sales"><span>Sales</span></label>
+    <label class="metric-toggle" style="--swatch:#d9480f"><input type="checkbox" value="costs"><span>Costs</span></label>
+    <label class="metric-toggle" style="--swatch:#7c3aed"><input type="checkbox" value="profit"><span>Profit</span></label>
+  </div>
+  <div class="chart-box"><canvas id="trend-chart"></canvas></div>
+</section>
+
+<%- include('partials/chart-scripts') %>
+<%- include('partials/footer') %>

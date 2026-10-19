@@ -1,58 +1,107 @@
-<%- include('../partials/header', { title: 'Quail Management' }) %>
-<h1>Quail Management</h1>
-<p class="tile-inline">Current Population: <strong><%= currentTotal %></strong></p>
+<%- include('../partials/header', { title: 'Quail' }) %>
+<%
+  var isEdit = !!(edit && edit.id);
+  var type = (edit && edit.change_type) || 'add';
+  var TYPE_LABEL = { add: 'Added', remove: 'Removed', mortality: 'Died' };
+  var TYPE_BADGE = { add: 'badge-green', remove: 'badge-blue', mortality: 'badge-red' };
+%>
+<div class="page-head">
+  <div>
+    <h1>Quail</h1>
+    <p>Track quail added, removed or lost. Deaths update your mortality rate automatically.</p>
+  </div>
+</div>
 
-<% if (typeof error !== 'undefined' && error) { %>
-  <p class="alert alert-error"><%= error %></p>
-<% } %>
+<div class="grid-split">
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><%= isEdit ? 'Edit entry' : 'New entry' %></h2>
+        <p>You have <strong class="num"><%= number(currentTotal) %></strong> quail<%= currentTotal === 1 ? '' : 's' %> right now</p>
+      </div>
+    </div>
+    <form method="POST" action="<%= isEdit ? '/quail/' + edit.id + '/update' : '/quail' %>" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <span class="label" id="type-label">What happened?</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="type-label">
+          <% ['add', 'remove', 'mortality'].forEach(function (t) { %>
+            <input type="radio" id="type-<%= t %>" name="change_type" value="<%= t %>" <%= type === t ? 'checked' : '' %> <%= isEdit ? 'disabled' : '' %>>
+            <label for="type-<%= t %>"><%= TYPE_LABEL[t] %></label>
+          <% }); %>
+        </div>
+        <% if (isEdit) { %><p class="field-hint">The type can't be changed. Delete the entry and add a new one instead.</p><% } %>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="entry_date">Date</label>
+          <input type="date" id="entry_date" name="entry_date" value="<%= edit ? edit.entry_date : today %>" max="<%= today %>" required>
+        </div>
+        <div class="field">
+          <label for="quantity">Number of quails</label>
+          <input type="number" id="quantity" name="quantity" min="1" inputmode="numeric" value="<%= edit ? edit.quantity : '' %>" placeholder="0" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="note">Note <span class="optional">(optional)</span></label>
+        <input type="text" id="note" name="note" maxlength="255" value="<%= edit && edit.note ? edit.note : '' %>" placeholder="e.g. New batch from supplier, sold to market">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><%= isEdit ? 'Save changes' : 'Save entry' %></button>
+        <% if (isEdit) { %><a class="btn btn-ghost" href="/quail">Cancel</a><% } %>
+      </div>
+    </form>
+  </section>
 
-<form method="POST" action="<%= (edit && edit.id) ? '/quail/' + edit.id + '/update' : '/quail' %>" class="form-large">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label for="entry_date">Date</label>
-  <input type="date" id="entry_date" name="entry_date" value="<%= edit ? edit.entry_date : today %>" required>
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Quail changes</h2><p>Net quails added or lost per period.</p></div>
+      <%- include('../partials/chart-controls') %>
+    </div>
+    <div class="chart-box chart-box-sm"><canvas id="trend-chart" data-metric="population"></canvas></div>
+  </section>
+</div>
 
-  <label for="change_type">Type</label>
-  <select id="change_type" name="change_type">
-    <option value="add" <%= edit && edit.change_type === 'add' ? 'selected' : '' %>>Add Stock</option>
-    <option value="remove" <%= edit && edit.change_type === 'remove' ? 'selected' : '' %>>Remove Stock</option>
-  </select>
+<section class="card card-flush">
+  <div class="card-head">
+    <div><h2>History</h2><p><%= number(page.total) %> <%= page.total === 1 ? 'entry' : 'entries' %><%= page.filtered ? ' in this range' : '' %></p></div>
+    <%- include('../partials/table-filter') %>
+  </div>
+  <% if (records.length === 0) { %>
+    <div class="empty">
+      <%- include('../partials/icon', { name: 'inbox' }) %>
+      <strong><%= page.filtered ? 'Nothing recorded in this date range' : 'No quail entries yet' %></strong>
+      <p><%= page.filtered ? 'Try a different range, or clear the filter.' : 'Add your first batch of quails to start tracking them.' %></p>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Date</th><th>Type</th><th class="num">Quails</th><th class="num">Mortality rate</th><th>Note</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+        <% records.forEach(function (r) { %>
+          <tr data-row-id="<%= r.id %>"<%- isEdit && String(edit.id) === String(r.id) ? ' class="is-editing"' : '' %>>
+            <td class="nowrap"><%= formatDate(r.entry_date) %></td>
+            <td><span class="badge <%= TYPE_BADGE[r.change_type] %>"><%= TYPE_LABEL[r.change_type] %></span></td>
+            <td class="num"><%= r.change_type === 'add' ? '+' : '−' %><%= number(r.quantity) %></td>
+            <td class="num"><%= r.mortalityRate !== null ? r.mortalityRate + '%' : '—' %></td>
+            <td class="muted"><%= r.note || '—' %></td>
+            <td class="actions">
+              <div class="row-actions">
+                <a class="btn btn-ghost" href="/quail/<%= r.id %>/edit">Edit</a>
+                <form method="POST" action="/quail/<%= r.id %>/delete" class="inline-form" data-confirm-title="Delete this quail entry?" data-confirm="It will be removed from your history and totals. This cannot be undone.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-ghost danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('../partials/pager') %>
+  <% } %>
+</section>
 
-  <label for="quantity">Quantity</label>
-  <input type="number" id="quantity" name="quantity" min="1" value="<%= edit ? edit.quantity : 1 %>" required>
-
-  <label for="note">Note (optional)</label>
-  <input type="text" id="note" name="note" value="<%= edit && edit.note ? edit.note : '' %>">
-
-  <button type="submit" class="btn btn-primary btn-large"><%= (edit && edit.id) ? 'Update Entry' : 'Save Entry' %></button>
-  <% if (edit && edit.id) { %><a class="btn btn-secondary" href="/quail">Cancel</a><% } %>
-</form>
-
-<h2>Trend</h2>
-<%- include('../partials/chart-controls') %>
-<canvas id="trend-chart" data-metric="population" height="100"></canvas>
-
-<h2>History</h2>
-<table class="data-table">
-  <thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Note</th><th>Actions</th></tr></thead>
-  <tbody>
-  <% records.forEach(function(r) { %>
-    <tr>
-      <td><%= r.entry_date %></td>
-      <td><%= r.change_type === 'add' ? 'Added' : 'Removed' %></td>
-      <td><%= r.quantity %></td>
-      <td><%= r.note || '-' %></td>
-      <td>
-        <a class="btn btn-small" href="/quail/<%= r.id %>/edit">Edit</a>
-        <form method="POST" action="/quail/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this entry?');">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="btn btn-small btn-danger">Delete</button>
-        </form>
-      </td>
-    </tr>
-  <% }); %>
-  </tbody>
-</table>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="/js/charts.js"></script>
+<%- include('../partials/chart-scripts') %>
 <%- include('../partials/footer') %>

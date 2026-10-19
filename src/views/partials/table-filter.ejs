@@ -1,0 +1,11 @@
+<%# Date-range filter for a history table. Needs `page` (from utils/paging). %>
+<% var listPath = '/' + currentPath.split('/')[1]; %>
+<form method="GET" action="<%= listPath %>" class="table-filter">
+  <label class="sr-only" for="filter-from">From</label>
+  <input type="date" id="filter-from" name="from" value="<%= page.from || '' %>" aria-label="From date">
+  <span class="table-filter-sep" aria-hidden="true">–</span>
+  <label class="sr-only" for="filter-to">To</label>
+  <input type="date" id="filter-to" name="to" value="<%= page.to || '' %>" aria-label="To date">
+  <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+  <% if (page.filtered) { %><a class="btn btn-ghost btn-sm" href="<%= listPath %>">Clear</a><% } %>
+</form>

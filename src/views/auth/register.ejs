@@ -1,35 +1,44 @@
-<%- include('../partials/header', { title: 'Register', hideNav: true }) %>
-<div class="auth-card">
-  <h1>Create Your Kwill Account</h1>
-  <% if (error) { %>
-    <p class="alert alert-error"><%= error %></p>
-  <% } %>
-  <form method="POST" action="/auth/register" class="form-large">
+<%- include('../partials/header', { title: 'Create account', layout: 'auth' }) %>
+<% var v = typeof values !== 'undefined' && values ? values : {}; %>
+<div class="auth-card auth-card-wide">
+  <a href="/" class="auth-logo"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill"></a>
+  <h1>Create your account</h1>
+  <p class="auth-sub">Start tracking your farm in under a minute.</p>
+  <form method="POST" action="/auth/register" class="form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label for="name">Full Name</label>
-    <input type="text" id="name" name="name" required autofocus>
-
-    <label for="username">Username</label>
-    <input type="text" id="username" name="username" required minlength="3" maxlength="20">
-
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
-
-    <label for="password">Password</label>
-    <div class="password-field">
-      <input type="password" id="password" name="password" required minlength="6">
-      <button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false"></button>
+    <div class="field">
+      <label for="name">Full name</label>
+      <input type="text" id="name" name="name" value="<%= v.name || '' %>" autocomplete="name" maxlength="100" required autofocus>
     </div>
-
-    <label for="confirm_password">Confirm Password</label>
-    <div class="password-field">
-      <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
-      <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false"></button>
+    <div class="form-row">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="<%= v.username || '' %>" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="20">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="<%= v.email || '' %>" autocomplete="email" maxlength="150" required>
+      </div>
     </div>
-
-    <button type="submit" class="btn btn-primary btn-large">Register</button>
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="password-field">
+        <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8">
+        <button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false"></button>
+      </div>
+      <%- include('../partials/password-rules', { target: 'password' }) %>
+    </div>
+    <div class="field">
+      <label for="confirm_password">Confirm password</label>
+      <div class="password-field">
+        <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required data-pw-confirm>
+        <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false"></button>
+      </div>
+      <p class="field-error" data-pw-confirm-hint hidden>Passwords don't match yet.</p>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
   </form>
-  <p>Already have an account? <a href="/auth/login">Log In</a></p>
+  <p class="auth-foot">Already have an account? <a href="/auth/login">Log in</a></p>
 </div>
-<script src="/js/password-toggle.js"></script>
+<p class="auth-legal">By creating an account you agree to our <a href="/privacy">Privacy Policy</a>.</p>
 <%- include('../partials/footer') %>

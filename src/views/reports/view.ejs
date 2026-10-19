@@ -1,35 +1,57 @@
-<%- include('../partials/header', { title: 'Report' }) %>
-<h1><%= moduleLabel %> Report</h1>
-<p><%= from %> to <%= to %></p>
+<%- include('../partials/header', { title: moduleLabel + ' report' }) %>
+<%
+  var ISO = /^\d{4}-\d{2}-\d{2}$/;
+  function cell(v) { return ISO.test(String(v)) ? formatDate(v) : v; }
+  function isNumeric(v) { return /^[-−]?₱?[\d,.]+%?$/.test(String(v).trim()); }
+%>
+<a href="/reports" class="back-link no-print"><%- include('../partials/icon', { name: 'arrowLeft' }) %>All reports</a>
+<div class="page-head">
+  <div>
+    <h1><%= moduleLabel %> report</h1>
+    <p><span class="report-period"><%= formatDate(from) %> – <%= formatDate(to) %></span></p>
+  </div>
+  <div class="page-actions no-print">
+    <a class="btn btn-primary" data-no-loading href="/reports/pdf?module=<%= module %>&from=<%= from %>&to=<%= to %>&granularity=<%= granularity %>">
+      <%- include('../partials/icon', { name: 'download' }) %>Export PDF
+    </a>
+  </div>
+</div>
 
-<a class="btn btn-primary btn-large no-print" data-no-loading href="/reports/pdf?module=<%= module %>&from=<%= from %>&to=<%= to %>&granularity=<%= granularity %>">Export to PDF</a>
-<a class="btn btn-secondary no-print" href="/reports">Back</a>
-
-<h2>Summary</h2>
-<ul class="summary-list">
-  <% summary.forEach(function(s) { %>
-    <li><strong><%= s.label %>:</strong> <%= s.value %></li>
+<section class="stats" aria-label="Summary">
+  <% summary.forEach(function (s) { %>
+    <div class="stat">
+      <span class="stat-label"><%= s.label %></span>
+      <span class="stat-value"><%= s.value %></span>
+    </div>
   <% }); %>
-</ul>
+</section>
 
-<h2>Trend</h2>
-<canvas id="trend-chart" data-metric="<%= chartMetric %>" height="100"></canvas>
+<section class="card">
+  <div class="card-head"><div><h2>Trend</h2></div></div>
+  <div class="chart-box"><canvas id="trend-chart" data-metric="<%= chartMetric %>" data-from="<%= from %>" data-to="<%= to %>" data-granularity="<%= granularity %>"></canvas></div>
+</section>
 
-<h2>Records</h2>
-<table class="data-table">
-  <thead><tr><% columns.forEach(function(c) { %><th><%= c %></th><% }); %></tr></thead>
-  <tbody>
-    <% rows.forEach(function(row) { %>
-      <tr><% row.forEach(function(cell) { %><td><%= cell %></td><% }); %></tr>
-    <% }); %>
-  </tbody>
-</table>
+<section class="card card-flush">
+  <div class="card-head"><div><h2>Records</h2><p><%= rows.length %> row<%= rows.length === 1 ? '' : 's' %></p></div></div>
+  <% if (rows.length === 0) { %>
+    <div class="empty">
+      <%- include('../partials/icon', { name: 'inbox' }) %>
+      <strong>Nothing recorded in this period</strong>
+      <p>Try a wider date range.</p>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><% columns.forEach(function (c, i) { %><th<%- i > 0 && isNumeric(rows[0][i]) ? ' class="num"' : '' %>><%= c %></th><% }); %></tr></thead>
+        <tbody>
+          <% rows.forEach(function (row) { %>
+            <tr><% row.forEach(function (v, i) { %><td<%- i > 0 && isNumeric(v) ? ' class="num"' : (i === 0 ? ' class="nowrap"' : '') %>><%= cell(v) %></td><% }); %></tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-  window.__chartRangeFrom = "<%= from %>";
-  window.__chartRangeTo = "<%= to %>";
-  window.__chartRangeGranularity = "<%= granularity %>";
-</script>
-<script src="/js/charts.js"></script>
+<%- include('../partials/chart-scripts') %>
 <%- include('../partials/footer') %>

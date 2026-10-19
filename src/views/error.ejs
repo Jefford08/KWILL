@@ -1,5 +1,16 @@
-<%- include('partials/header', { title: title || 'Error' }) %>
-<h1><%= title || 'Something went wrong' %></h1>
-<p><%= message %></p>
-<a class="btn btn-primary btn-large" href="/dashboard">Back to Dashboard</a>
+<%
+  var pageLayout = typeof layout !== 'undefined' ? layout : (typeof currentUser !== 'undefined' && currentUser ? 'app' : 'auth');
+  var heading = (typeof title !== 'undefined' && title) || 'Something went wrong';
+%>
+<%- include('partials/header', { title: heading, layout: pageLayout }) %>
+<div class="<%= pageLayout === 'app' ? 'card content-narrow' : 'auth-card' %>" style="text-align:center">
+  <div class="auth-icon" style="background:var(--danger-soft);color:var(--danger)"><%- include('partials/icon', { name: 'close' }) %></div>
+  <h1 style="font-size:1.35rem"><%= heading %></h1>
+  <p class="muted" style="margin:8px 0 24px"><%= message %></p>
+  <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+    <a class="btn btn-primary" href="/home">Back to Home</a>
+  <% } else { %>
+    <a class="btn btn-primary" href="/">Go to the home page</a>
+  <% } %>
+</div>
 <%- include('partials/footer') %>

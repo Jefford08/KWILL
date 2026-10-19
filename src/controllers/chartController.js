@@ -190,10 +190,34 @@ async function getPopulationSeries(userId, from, to, granularity) {
   return { labels, data: fillSeries(rows, labels, 'd', 'v') };
 }
 
+async function getFeedCostSeries(userId, from, to, granularity) {
+  const labels = labelsForRange(from, to, granularity);
+  const d = truncColumn('purchase_date', granularity);
+  const [rows] = await pool.query(
+    `SELECT ${d} AS d, SUM(cost) AS v
+     FROM feed_purchases WHERE user_id = ? AND purchase_date BETWEEN ? AND ?
+     GROUP BY ${d}`,
+    [userId, from, to]
+  );
+  return { labels, data: fillSeries(rows, labels, 'd', 'v') };
+}
+
+// All money going out: the Expenses page plus feed purchases.
+async function getCostsSeries(userId, from, to, granularity) {
+  const [expenses, feed] = await Promise.all([
+    getExpensesSeries(userId, from, to, granularity),
+    getFeedCostSeries(userId, from, to, granularity),
+  ]);
+  const data = expenses.labels.map((_, i) => Math.round((expenses.data[i] + feed.data[i]) * 100) / 100);
+  return { labels: expenses.labels, data };
+}
+
 async function getProfitSeries(userId, from, to, granularity) {
-  const sales = await getSalesSeries(userId, from, to, granularity);
-  const expenses = await getExpensesSeries(userId, from, to, granularity);
-  const data = sales.labels.map((_, i) => Math.round((sales.data[i] - expenses.data[i]) * 100) / 100);
+  const [sales, costs] = await Promise.all([
+    getSalesSeries(userId, from, to, granularity),
+    getCostsSeries(userId, from, to, granularity),
+  ]);
+  const data = sales.labels.map((_, i) => Math.round((sales.data[i] - costs.data[i]) * 100) / 100);
   return { labels: sales.labels, data };
 }
 
@@ -203,6 +227,7 @@ const METRIC_HANDLERS = {
   feed: getFeedSeries,
   sales: getSalesSeries,
   expenses: getExpensesSeries,
+  costs: getCostsSeries,
   profit: getProfitSeries,
   population: getPopulationSeries,
 };

@@ -1,0 +1,36 @@
+<%#
+  Footer for a paginated table: "Showing 26–50 of 132" plus page links that
+  keep the current date filter. Needs `page` (from utils/paging).
+%>
+<% var listPath = '/' + currentPath.split('/')[1]; %>
+<%
+  function pageHref(n) {
+    var q = [];
+    if (page.from) q.push('from=' + encodeURIComponent(page.from));
+    if (page.to) q.push('to=' + encodeURIComponent(page.to));
+    if (n > 1) q.push('page=' + n);
+    return listPath + (q.length ? '?' + q.join('&') : '');
+  }
+  // Compact list: first, last, and the pages around the current one.
+  var nums = [];
+  for (var n = 1; n <= page.pages; n++) {
+    if (n === 1 || n === page.pages || Math.abs(n - page.page) <= 1) nums.push(n);
+    else if (nums[nums.length - 1] !== '…') nums.push('…');
+  }
+%>
+<% if (page.total > 0) { %>
+<div class="pager">
+  <span class="pager-info">Showing <strong><%= page.start %>–<%= page.end %></strong> of <strong><%= page.total %></strong></span>
+  <% if (page.pages > 1) { %>
+    <nav class="pager-links" aria-label="Pages">
+      <% if (page.page > 1) { %><a class="pager-btn" href="<%= pageHref(page.page - 1) %>" aria-label="Previous page">‹</a><% } else { %><span class="pager-btn disabled" aria-hidden="true">‹</span><% } %>
+      <% nums.forEach(function (n) { %>
+        <% if (n === '…') { %><span class="pager-gap">…</span>
+        <% } else if (n === page.page) { %><span class="pager-btn current" aria-current="page"><%= n %></span>
+        <% } else { %><a class="pager-btn" href="<%= pageHref(n) %>"><%= n %></a><% } %>
+      <% }); %>
+      <% if (page.page < page.pages) { %><a class="pager-btn" href="<%= pageHref(page.page + 1) %>" aria-label="Next page">›</a><% } else { %><span class="pager-btn disabled" aria-hidden="true">›</span><% } %>
+    </nav>
+  <% } %>
+</div>
+<% } %>

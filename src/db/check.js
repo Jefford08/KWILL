@@ -4,7 +4,7 @@ const { pool } = require('../config/db');
 
 const APP_TABLES = [
   'users', 'quail_population', 'egg_records', 'feed_purchases',
-  'feed_consumption', 'sales', 'expenses', 'session',
+  'feed_consumption', 'sales', 'expenses', 'session', 'verification_codes',
 ];
 
 async function check() {

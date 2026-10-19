@@ -1,17 +1,45 @@
-<header class="topbar no-print">
-  <div class="brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill" class="brand-wordmark"></div>
-  <nav class="main-nav">
-    <a href="/dashboard">Dashboard</a>
-    <a href="/eggs">Eggs</a>
-    <a href="/quail">Quail</a>
-    <a href="/mortality">Mortality</a>
-    <a href="/feed">Feed</a>
-    <a href="/sales">Sales</a>
-    <a href="/expenses">Expenses</a>
-    <a href="/reports">Reports</a>
+<%
+  var path = typeof currentPath !== 'undefined' ? currentPath : '';
+  function isActive(href) { return path === href || path.indexOf(href + '/') === 0; }
+  var groups = [
+    { label: null, items: [{ href: '/home', label: 'Home', icon: 'home' }] },
+    { label: 'Records', items: [
+      { href: '/eggs', label: 'Eggs', icon: 'egg' },
+      { href: '/quail', label: 'Quail', icon: 'quail' },
+      { href: '/feed', label: 'Feed', icon: 'feed' },
+      { href: '/sales', label: 'Sales', icon: 'sales' },
+      { href: '/expenses', label: 'Expenses', icon: 'expenses' },
+    ] },
+    { label: 'Insights', items: [{ href: '/reports', label: 'Reports', icon: 'reports' }] },
+  ];
+  var displayName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) || 'Account';
+  var initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+%>
+<div class="sidebar-backdrop" data-sidebar-close hidden></div>
+<aside class="sidebar no-print" id="sidebar" aria-label="Main navigation">
+  <div class="sidebar-head">
+    <a href="/home" class="sidebar-brand"><img src="/img/kwill-wordmark-logo.svg" alt="Kwill"></a>
+    <button type="button" class="icon-btn sidebar-close" data-sidebar-close aria-label="Close menu"><%- include('icon', { name: 'close' }) %></button>
+  </div>
+  <nav class="sidebar-nav">
+    <% groups.forEach(function (g) { %>
+      <% if (g.label) { %><p class="nav-label"><%= g.label %></p><% } %>
+      <% g.items.forEach(function (item) { %>
+        <a href="<%= item.href %>" class="nav-link<%= isActive(item.href) ? ' active' : '' %>"<%- isActive(item.href) ? ' aria-current="page"' : '' %>>
+          <%- include('icon', { name: item.icon }) %><span><%= item.label %></span>
+        </a>
+      <% }); %>
+    <% }); %>
   </nav>
-  <form method="POST" action="/auth/logout" class="logout-form">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button type="submit" class="btn btn-secondary">Log Out</button>
-  </form>
-</header>
+  <div class="sidebar-foot">
+    <a href="/settings" class="nav-link<%= isActive('/settings') ? ' active' : '' %>"><%- include('icon', { name: 'settings' }) %><span>Settings</span></a>
+    <div class="user-chip">
+      <span class="avatar" aria-hidden="true"><%= initials %></span>
+      <span class="user-chip-name"><%= displayName %></span>
+      <form method="POST" action="/auth/logout" class="inline-form" data-confirm="You'll need to log in again to see your farm records." data-confirm-title="Sign out of Kwill?" data-confirm-ok="Sign out" data-confirm-icon="logout" data-confirm-tone="primary">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="icon-btn" aria-label="Sign out" title="Sign out"><%- include('icon', { name: 'logout' }) %></button>
+      </form>
+    </div>
+  </div>
+</aside>

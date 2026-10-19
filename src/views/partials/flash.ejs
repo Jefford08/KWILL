@@ -1,0 +1,27 @@
+<%
+  var inline = [];
+  if (typeof success !== 'undefined' && success) inline.push({ type: 'success', message: success });
+  if (typeof error !== 'undefined' && error) inline.push({ type: 'error', message: error });
+  var toast = typeof flash !== 'undefined' && flash ? flash : null;
+  var TOAST_ICON = { success: 'check', error: 'close', info: 'mail' };
+  var TOAST_TITLE = { success: 'Done', error: 'Something went wrong', info: 'Heads up' };
+%>
+<% inline.forEach(function (m) { %>
+  <div class="alert alert-<%= m.type %>" role="<%= m.type === 'error' ? 'alert' : 'status' %>">
+    <%- include('icon', { name: m.type === 'error' ? 'close' : 'check' }) %>
+    <span><%= m.message %></span>
+  </div>
+<% }); %>
+<% if (toast) { %>
+  <div class="toast-region" aria-live="polite">
+    <div class="toast toast-<%= toast.type %>" role="<%= toast.type === 'error' ? 'alert' : 'status' %>"<% if (toast.highlight) { %> data-highlight="<%= toast.highlight %>"<% } %>>
+      <span class="toast-icon"><%- include('icon', { name: TOAST_ICON[toast.type] || 'check' }) %></span>
+      <div class="toast-body">
+        <strong><%= TOAST_TITLE[toast.type] || 'Done' %></strong>
+        <span><%= toast.message %></span>
+      </div>
+      <button type="button" class="toast-close" aria-label="Dismiss" data-toast-close><%- include('icon', { name: 'close' }) %></button>
+      <span class="toast-timer" aria-hidden="true"></span>
+    </div>
+  </div>
+<% } %>

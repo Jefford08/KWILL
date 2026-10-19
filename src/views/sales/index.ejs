@@ -1,58 +1,93 @@
 <%- include('../partials/header', { title: 'Sales' }) %>
-<h1>Sales</h1>
+<% var isEdit = !!(edit && edit.id); var item = (edit && edit.item_type) || 'egg'; %>
+<div class="page-head">
+  <div>
+    <h1>Sales</h1>
+    <p>Record eggs and quails sold. Totals feed straight into your profit.</p>
+  </div>
+</div>
 
-<% if (typeof error !== 'undefined' && error) { %>
-  <p class="alert alert-error"><%= error %></p>
-<% } %>
+<div class="grid-split">
+  <section class="card">
+    <div class="card-head"><div><h2><%= isEdit ? 'Edit sale' : 'New sale' %></h2><p>Quantity × unit price is calculated for you.</p></div></div>
+    <form method="POST" action="<%= isEdit ? '/sales/' + edit.id + '/update' : '/sales' %>" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <span class="label" id="item-label">Item sold</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="item-label">
+          <input type="radio" id="item-egg" name="item_type" value="egg" <%= item === 'egg' ? 'checked' : '' %>><label for="item-egg">Eggs</label>
+          <input type="radio" id="item-quail" name="item_type" value="quail" <%= item === 'quail' ? 'checked' : '' %>><label for="item-quail">Quails</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="sale_date">Date</label>
+        <input type="date" id="sale_date" name="sale_date" value="<%= edit ? edit.sale_date : today %>" max="<%= today %>" required>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="quantity">Quantity</label>
+          <input type="number" min="1" inputmode="numeric" id="quantity" name="quantity" value="<%= edit ? edit.quantity : '' %>" placeholder="0" required>
+        </div>
+        <div class="field">
+          <label for="unit_price">Unit price</label>
+          <div class="input-prefix"><span>₱</span><input type="number" step="0.01" min="0" inputmode="decimal" id="unit_price" name="unit_price" value="<%= edit ? edit.unit_price : '' %>" placeholder="0.00" required></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><%= isEdit ? 'Save changes' : 'Save sale' %></button>
+        <% if (isEdit) { %><a class="btn btn-ghost" href="/sales">Cancel</a><% } %>
+      </div>
+    </form>
+  </section>
 
-<form method="POST" action="<%= (edit && edit.id) ? '/sales/' + edit.id + '/update' : '/sales' %>" class="form-large">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label for="sale_date">Date</label>
-  <input type="date" id="sale_date" name="sale_date" value="<%= edit ? edit.sale_date : today %>" required>
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Sales trend</h2><p>Revenue per period.</p></div>
+      <%- include('../partials/chart-controls') %>
+    </div>
+    <div class="chart-box chart-box-sm"><canvas id="trend-chart" data-metric="sales"></canvas></div>
+  </section>
+</div>
 
-  <label for="item_type">Item</label>
-  <select id="item_type" name="item_type">
-    <option value="egg" <%= edit && edit.item_type === 'egg' ? 'selected' : '' %>>Eggs</option>
-    <option value="quail" <%= edit && edit.item_type === 'quail' ? 'selected' : '' %>>Quails</option>
-  </select>
+<section class="card card-flush">
+  <div class="card-head"><div><h2>History</h2><p><%= number(page.total) %> <%= page.total === 1 ? 'sale' : 'sales' %><%= page.filtered ? ' in this range' : '' %></p></div>
+    <%- include('../partials/table-filter') %>
+  </div>
+  <% if (records.length === 0) { %>
+    <div class="empty">
+      <%- include('../partials/icon', { name: 'inbox' }) %>
+      <strong><%= page.filtered ? 'Nothing recorded in this date range' : 'No sales yet' %></strong>
+      <p><%= page.filtered ? 'Try a different range, or clear the filter.' : 'Sales you record will appear here.' %></p>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Date</th><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Total</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+        <% records.forEach(function (r) { %>
+          <tr data-row-id="<%= r.id %>"<%- isEdit && String(edit.id) === String(r.id) ? ' class="is-editing"' : '' %>>
+            <td class="nowrap"><%= formatDate(r.sale_date) %></td>
+            <td><span class="badge <%= r.item_type === 'egg' ? 'badge-amber' : 'badge-green' %>"><%= r.item_type === 'egg' ? 'Eggs' : 'Quails' %></span></td>
+            <td class="num"><%= number(r.quantity) %></td>
+            <td class="num"><%= money(r.unit_price) %></td>
+            <td class="num"><strong><%= money(r.total) %></strong></td>
+            <td class="actions">
+              <div class="row-actions">
+                <a class="btn btn-ghost" href="/sales/<%= r.id %>/edit">Edit</a>
+                <form method="POST" action="/sales/<%= r.id %>/delete" class="inline-form" data-confirm-title="Delete this sale?" data-confirm="It will be removed from your history and totals. This cannot be undone.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-ghost danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('../partials/pager') %>
+  <% } %>
+</section>
 
-  <label for="quantity">Quantity</label>
-  <input type="number" min="1" id="quantity" name="quantity" value="<%= edit ? edit.quantity : 1 %>" required>
-
-  <label for="unit_price">Unit Price (₱)</label>
-  <input type="number" step="0.01" min="0" id="unit_price" name="unit_price" value="<%= edit ? edit.unit_price : '' %>" required>
-
-  <button type="submit" class="btn btn-primary btn-large"><%= (edit && edit.id) ? 'Update Sale' : 'Record Sale' %></button>
-  <% if (edit && edit.id) { %><a class="btn btn-secondary" href="/sales">Cancel</a><% } %>
-</form>
-
-<h2>Trend</h2>
-<%- include('../partials/chart-controls') %>
-<canvas id="trend-chart" data-metric="sales" height="100"></canvas>
-
-<h2>History</h2>
-<table class="data-table">
-  <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Actions</th></tr></thead>
-  <tbody>
-  <% records.forEach(function(r) { %>
-    <tr>
-      <td><%= r.sale_date %></td>
-      <td><%= r.item_type %></td>
-      <td><%= r.quantity %></td>
-      <td>₱<%= Number(r.unit_price).toFixed(2) %></td>
-      <td>₱<%= r.total.toFixed(2) %></td>
-      <td>
-        <a class="btn btn-small" href="/sales/<%= r.id %>/edit">Edit</a>
-        <form method="POST" action="/sales/<%= r.id %>/delete" class="inline-form" onsubmit="return confirm('Delete this record?');">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="btn btn-small btn-danger">Delete</button>
-        </form>
-      </td>
-    </tr>
-  <% }); %>
-  </tbody>
-</table>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="/js/charts.js"></script>
+<%- include('../partials/chart-scripts') %>
 <%- include('../partials/footer') %>

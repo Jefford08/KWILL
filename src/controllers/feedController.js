@@ -1,35 +1,35 @@
 const pool = require('../config/db');
+const { paginate, dateRange } = require('../utils/paging');
 
-async function combinedHistory(userId) {
-  const [purchases] = await pool.query(
-    'SELECT id, purchase_date AS date, quantity_kg, cost FROM feed_purchases WHERE user_id = ? ORDER BY purchase_date DESC, id DESC',
-    [userId]
-  );
-  const [consumption] = await pool.query(
-    'SELECT id, consumption_date AS date, quantity_kg FROM feed_consumption WHERE user_id = ? ORDER BY consumption_date DESC, id DESC',
-    [userId]
-  );
-
-  const combined = [
-    ...purchases.map((r) => ({ ...r, kind: 'purchase' })),
-    ...consumption.map((r) => ({ ...r, kind: 'consumption', cost: null })),
-  ];
-  combined.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-  return combined;
+async function combinedHistory(userId, query) {
+  return paginate(query, {
+    countSql: `SELECT
+        (SELECT COUNT(*) FROM feed_purchases WHERE user_id = ? AND ${dateRange('purchase_date')})
+      + (SELECT COUNT(*) FROM feed_consumption WHERE user_id = ? AND ${dateRange('consumption_date')}) AS n`,
+    rowsSql: `SELECT id, purchase_date AS date, quantity_kg, cost, 'purchase' AS kind
+         FROM feed_purchases WHERE user_id = ? AND ${dateRange('purchase_date')}
+       UNION ALL
+       SELECT id, consumption_date AS date, quantity_kg, NULL AS cost, 'consumption' AS kind
+         FROM feed_consumption WHERE user_id = ? AND ${dateRange('consumption_date')}
+       ORDER BY date DESC, id DESC`,
+    params: (from, to) => [userId, from, to, userId, from, to],
+  });
 }
 
 async function addPurchase(userId, { purchase_date, quantity_kg, cost }) {
-  await pool.query(
-    'INSERT INTO feed_purchases (user_id, purchase_date, quantity_kg, cost) VALUES (?, ?, ?, ?)',
+  const [rows] = await pool.query(
+    'INSERT INTO feed_purchases (user_id, purchase_date, quantity_kg, cost) VALUES (?, ?, ?, ?) RETURNING id',
     [userId, purchase_date, quantity_kg, cost]
   );
+  return rows[0].id;
 }
 
 async function addConsumption(userId, { consumption_date, quantity_kg }) {
-  await pool.query(
-    'INSERT INTO feed_consumption (user_id, consumption_date, quantity_kg) VALUES (?, ?, ?)',
+  const [rows] = await pool.query(
+    'INSERT INTO feed_consumption (user_id, consumption_date, quantity_kg) VALUES (?, ?, ?) RETURNING id',
     [userId, consumption_date, quantity_kg]
   );
+  return rows[0].id;
 }
 
 async function deletePurchase(userId, id) {

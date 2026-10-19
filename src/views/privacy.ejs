@@ -1,0 +1,55 @@
+<%- include('partials/header', { title: 'Privacy Policy' }) %>
+<% if (currentUser) { %>
+  <a href="/settings" class="back-link"><%- include('partials/icon', { name: 'arrowLeft' }) %>Settings</a>
+<% } %>
+<div class="page-head">
+  <div>
+    <h1>Privacy Policy</h1>
+    <p>Last updated October 12, 2026</p>
+  </div>
+</div>
+
+<article class="card prose">
+  <p>Kwill helps you keep records for your quail farm. This policy explains what information Kwill stores, why, and the choices you have. We keep it short because we collect very little.</p>
+
+  <h2>Information we collect</h2>
+  <ul>
+    <li><strong>Account details</strong>: the full name, username and email address you enter when you create an account or update it in Settings.</li>
+    <li><strong>Your password</strong>, stored only as a one-way bcrypt hash. Nobody, including us, can read your actual password.</li>
+    <li><strong>Farm records</strong> you enter: egg production, quail counts and mortality, feed, sales and expenses.</li>
+    <li><strong>Verification codes</strong> sent to your email for password resets and changes, stored only as a hash and valid for 10 minutes.</li>
+  </ul>
+
+  <h2>How we use it</h2>
+  <ul>
+    <li>To sign you in and keep your account secure.</li>
+    <li>To show your farm records, totals, charts and reports back to you.</li>
+    <li>To email you verification codes when you ask to reset or change your password. We don't send marketing emails.</li>
+  </ul>
+  <p>We don't sell your information, show you ads, or share your records with other users. Each account can only see its own data.</p>
+
+  <h2>Cookies</h2>
+  <p>Kwill uses a single essential cookie to keep you logged in. It expires after 8 hours or when you log out. We don't use advertising or tracking cookies.</p>
+
+  <h2>Where your data is stored</h2>
+  <p>Your data is stored in a PostgreSQL database hosted by Supabase, and the app runs on Vercel. Connections are encrypted in transit. Emails are delivered through our email provider.</p>
+
+  <h2>How long we keep it</h2>
+  <p>Your account and records are kept for as long as your account exists. Verification codes are deleted within a day of being issued. Login sessions are deleted when they expire or when you change your password.</p>
+
+  <h2>Your choices</h2>
+  <ul>
+    <li>View and edit your name, username and email at any time in <a href="/settings">Settings</a>.</li>
+    <li>Change your password from Settings, or reset it from the login page if you forget it.</li>
+    <li>Ask us to export or delete your account and all of its records.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <% if (contactEmail) { %>
+    <p>Questions or requests about your data? Email <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>.</p>
+  <% } else { %>
+    <p>Questions or requests about your data? Contact the administrator of this Kwill site.</p>
+  <% } %>
+  <p class="subtle">We may update this policy as Kwill changes. The date at the top shows when it was last revised.</p>
+</article>
+<%- include('partials/footer') %>
