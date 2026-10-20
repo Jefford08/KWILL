@@ -69,7 +69,6 @@ async function main() {
     return m.length ? m[m.length - 1][1] : null;
   };
 
-  // GitHub's Ubuntu runners don't allow Chrome's sandbox.
   const browser = await puppeteer.launch({ headless: true, args: process.env.CI ? ['--no-sandbox'] : [] });
   const p = await browser.newPage();
   await p.setViewport({ width: 1366, height: 900 });
