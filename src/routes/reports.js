@@ -10,8 +10,9 @@ const chartController = require('../controllers/chartController');
 
 async function launchBrowser() {
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-
-    const chromiumModule = require('@sparticuz/chromium');
+    // @sparticuz/chromium is ESM-only. require() of it works on a local Node 24
+    // but fails in Vercel's runtime (ERR_REQUIRE_ESM), so load it with import().
+    const chromiumModule = await import('@sparticuz/chromium');
     const chromium = chromiumModule.default || chromiumModule;
     const puppeteerCore = require('puppeteer-core');
     return puppeteerCore.launch({
