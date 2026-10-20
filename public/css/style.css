@@ -809,3 +809,23 @@ a.pager-btn:hover { background: var(--primary-soft); border-color: #b9d3be; colo
 .pager-btn.current { background: var(--primary); border-color: var(--primary); color: #fff; }
 .pager-btn.disabled { opacity: 0.4; }
 .pager-gap { padding: 0 4px; color: var(--text-subtle); }
+
+/* ---- Sign out on phones -------------------------------------------------------------------- */
+
+.sidebar-signout { display: none; margin: 0; }
+.nav-signout { width: 100%; border: 0; background: none; font: inherit; cursor: pointer; text-align: left; }
+.nav-signout, .nav-signout .icon { color: var(--danger); }
+.nav-signout:hover { background: var(--danger-soft); color: var(--danger); }
+
+@media (max-width: 900px) {
+  /* 100vh on phones includes the area under the browser's toolbars, which hid
+     the bottom of the menu (Settings and sign out). dvh is the visible height. */
+  .sidebar {
+    height: 100vh;
+    height: 100dvh;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .sidebar-signout { display: block; }
+  .user-chip form { display: none; }
+  .user-chip { padding-top: 4px; }
+}

@@ -41,5 +41,10 @@
         <button type="submit" class="icon-btn" aria-label="Sign out" title="Sign out"><%- include('icon', { name: 'logout' }) %></button>
       </form>
     </div>
+    <%# Phones: a full, labeled Sign out row (the small icon above is easy to miss there). %>
+    <form method="POST" action="/auth/logout" class="sidebar-signout" data-confirm="You'll need to log in again to see your farm records." data-confirm-title="Sign out of Kwill?" data-confirm-ok="Sign out" data-confirm-icon="logout" data-confirm-tone="primary">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="nav-link nav-signout"><%- include('icon', { name: 'logout' }) %><span>Sign out</span></button>
+    </form>
   </div>
 </aside>
